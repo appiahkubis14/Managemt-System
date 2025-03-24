@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'inventory',
     'transport',
     'warehouse',
+    'employees',
     
 
     'allauth',
@@ -162,6 +163,9 @@ USE_TZ = True
 
 LOGIN_REDIRECT_URL = "/dashboard/home/"
 LOGOUT_REDIRECT_URL = "/login/"
+
+# settings.py
+AUTH_USER_MODEL = 'employees.CustomUser'
 
 
 # Static files (CSS, JavaScript, Images)

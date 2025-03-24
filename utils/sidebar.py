@@ -10,13 +10,22 @@ class Sidebar:
                     "Tracking Dashboard": {"icon": "fa fa-map-marked-alt", "url": "/dashboard/tracking/"},
                 },
             },
+            
+            "Employees Management": {
+            "icon": "fa fa-users",
+            "sub_items": {
+                "View Employees": {"icon": "fa fa-list", "url": "/employees/employee-list/"},
+                "Manage Departments": {"icon": "fa fa-building", "url": "/employees/departments/"},
+                "Assign Roles": {"icon": "fa fa-user-shield", "url": "/employees/roles/"},
+            },
+        },
 
             "Inventory Management": {
                 "icon": "fa fa-box-open",
                 "sub_items": {
                     "View All Inventory": {"icon": "fa fa-list", "url": "/inventory/view/"},
                     "Add New Stock": {"icon": "fa fa-plus", "url": "/inventory/add/"},
-                    "Stock Alerts & Expiry": {"icon": "fa fa-exclamation-circle", "url": "/inventory/alerts/"},
+                    "Stock Alerts & Expiry": {"icon": "fa fa-exclamation-circle", "url":"/inventory/alerts/"},
                 },
             },
 

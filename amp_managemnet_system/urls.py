@@ -26,5 +26,11 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("",include("dashboard.urls")),
     path('502/', TemplateView.as_view(template_name='pages-500.html'), name='502'),
+    path("transport/",include("transport.urls")),
+    path("inventory/",include("inventory.urls")),
+    path("warehouse/",include("warehouse.urls")),
+    path("ampPortal/",include("ampPortal.urls")),
+    path("employees/",include("employees.urls")),
+    path("accounts/", include("allauth.urls")),
     path('<path:not_found>/', TemplateView.as_view(template_name='pages-404.html'), name='404'),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) 
