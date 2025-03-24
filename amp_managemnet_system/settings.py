@@ -11,6 +11,12 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import os
+import dotenv
+
+
+# Load environment variables from .env file
+dotenv.load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -39,6 +45,15 @@ INSTALLED_APPS = [
     
     'ampPortal',
     'dashboard',
+    'inventory',
+    'transport',
+    'warehouse',
+    
+
+    'allauth',
+    "rest_framework"
+    # 'allauth.account',
+    # 'allauth.socialaccount',
 ]
 
 MIDDLEWARE = [
@@ -50,9 +65,9 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     
-    'allauth.account.middleware.AccountMiddleware',
-    'ampPortal.middleware.LoginRequiredMiddleware',
-    'ampPortal.middleware.SidebarMiddleware',
+    # 'allauth.account.middleware.AccountMiddleware',
+    # 'ampPortal.middleware.LoginRequiredMiddleware',
+    # 'ampPortal.middleware.SidebarMiddleware',
 ]
 
 ROOT_URLCONF = "amp_managemnet_system.urls"
@@ -60,7 +75,7 @@ ROOT_URLCONF = "amp_managemnet_system.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        'DIRS': [BASE_DIR / "templates"], 
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -79,10 +94,15 @@ WSGI_APPLICATION = "amp_managemnet_system.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# Database
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
     }
 }
 
@@ -105,6 +125,29 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'dashboard', 'static'),
+    os.path.join(BASE_DIR, 'inventory', 'static'),
+    os.path.join(BASE_DIR, 'ampPortal', 'static'),
+    os.path.join(BASE_DIR, 'transport', 'static'),
+    os.path.join(BASE_DIR, 'warehouse', 'static'),
+]
+
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+
+# Ensure Django finds your static files during development
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),  # Change this path if needed
+]
+
+# Only needed in production
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")  
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
@@ -116,6 +159,9 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 
 USE_TZ = True
+
+LOGIN_REDIRECT_URL = "/dashboard/home/"
+LOGOUT_REDIRECT_URL = "/login/"
 
 
 # Static files (CSS, JavaScript, Images)

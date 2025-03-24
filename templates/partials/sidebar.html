@@ -1,0 +1,41 @@
+{% load static %}
+
+<!-- Left Sidebar Start -->
+<div class="sidebar-left">
+    <div data-simplebar class="h-100">
+        <div id="sidebar-menu">
+            <ul class="left-menu list-unstyled" id="side-menu">
+                
+                {% for key, value in sidebar_items.items %}
+                    <li>
+                        {% if value.sub_items %}
+                            <!-- Menu Item with Sub-Items -->
+                            <a href="javascript:void(0);" class="has-arrow">
+                                <i class="{{ value.icon }}"></i>
+                                <span>{{ key }}</span>
+                            </a>
+                            <ul class="sub-menu">
+                                {% for sub_key, sub_value in value.sub_items.items %}
+                                    <li>
+                                        <a href="{{ sub_value.url }}">
+                                            <i class="mdi mdi-checkbox-blank-circle align-middle"></i>
+                                            {{ sub_key }}
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <!-- Menu Item Without Sub-Items -->
+                            <a href="{{ value.url }}">
+                                <i class="{{ value.icon }}"></i>
+                                <span>{{ key }}</span>
+                            </a>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+                
+            </ul>
+        </div>
+    </div>
+</div>
+<!-- Left Sidebar End -->

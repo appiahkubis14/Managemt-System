@@ -1,7 +1,7 @@
 from django.urls import path
-from .views import index
+from .views import tracking_view
 
 
 urlpatterns = [
-    path('', index, name='hr_dashboard'),
+    path('tracking-dashboard/', tracking_view, name='tracking_dashboard'),
 ]

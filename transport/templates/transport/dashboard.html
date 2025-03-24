@@ -1,0 +1,310 @@
+{% extends 'web_base.html' %}
+{% load i18n static %}
+{% load custom_filters %}
+
+{% block header %}
+    {% include 'partials/header.html' %}
+{% endblock %}
+
+{% block greeting %}
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-flex align-items-center justify-content-between">
+            <div>
+                <h4 class="fs-16 fw-semibold mb-1 mb-md-2">Good Morning, <span class="text-primary">{{ user.username }}!</span></h4>
+                <p class="text-muted mb-0">Here's what's happening with your dashboard today.</p>
+            </div>
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="javascript: void(0);">AMP</a></li>
+                    {% for crumb in path|getcrumbs  %}
+                        {% if forloop.last %}
+                            <li class="breadcrumb-item active">{{ crumb }}</li>
+                        {% else %}
+                            <li class="breadcrumb-item"><a href="/{{ crumb|lower }}">{{ crumb }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock greeting %}
+
+{% block main_content %}
+    <div class="row">
+        <div class="col-xxl-9">
+            
+          
+ 
+
+            {% comment %} Order Progress {% endcomment %}
+            <div class="row">
+                <div class="col-12">
+                    <div class="card" style="height: 495px; overflow: hidden auto;" data-simplebar="init">
+                        <div class="card-header">
+                            <div class="card-icon text-muted"><i class="fas fa-sync-alt fs-14"></i></div>
+                            <h3 class="card-title">Order Progress</h3>
+                            <div class="card-addon dropdown">
+                                <button class="btn btn-label-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown"> <i class="fas fa-filter fs-12 align-middle ms-1"></i></button>
+                                <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated">
+                                    <a class="dropdown-item" href="#">
+                                        <div class="dropdown-icon"><i class="fa fa-poll"></i></div>
+                                        <span class="dropdown-content">Today</span>
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                        <div class="dropdown-icon"><i class="fa fa-chart-pie"></i></div>
+                                        <span class="dropdown-content">Yesterday</span>
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                        <div class="dropdown-icon"><i class="fa fa-chart-line"></i></div>
+                                        <span class="dropdown-content">Week</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive-md">
+                                <table class="table text-nowrap mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Order ID</th>
+                                            <th>Status</th>
+                                            <th>Operators</th>
+                                            <th>Location</th>
+                                            <th>Progress</th>
+                                            <th>Start date</th>
+                                            <th>Estimation</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="align-middle">837563</td>
+                                            <td class="align-middle"><i class="marker marker-dot m-0 me-2 text-primary"></i> Arrived</td>
+                                            <td class="align-middle">
+                                                <div class="avatar-group">
+                                                    <div class="avatar avatar-circle">
+                                                        <img src="{% static 'images/users/avatar-1.png' %}" alt="Avatar image" class="avatar-2xs">
+                                                    </div>
+                                                    <div class="avatar avatar-circle">
+                                                        <img src="{% static 'images/users/avatar-2.png' %}" alt="Avatar image" class="avatar-2xs">
+                                                    </div>
+                                                    <div class="avatar avatar-circle">
+                                                        <img src="{% static 'images/users/avatar-3.png' %}" alt="Avatar image" class="avatar-2xs">
+                                                    </div>
+                                                    <div class="avatar avatar-circle">
+                                                        <img src="{% static 'images/users/avatar-4.png' %}" alt="Avatar image" class="avatar-2xs">
+                                                    </div>
+                                                    <div class="avatar avatar-circle">
+                                                        <img src="{% static 'images/users/avatar-5.png' %}" alt="Avatar image" class="avatar-2xs">
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="align-middle">Tokyo</td>
+                                            <td class="align-middle">
+                                                <div class="">
+                                                    <h6 class="">90%</h6>
+                                                    <div class="progress progress-sm">
+                                                        <div class="progress-bar bg-primary" style="width: 90%"></div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="align-middle">26/06/2023</td>
+                                            <td class="align-middle">27/06/2023</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="align-middle">982365</td>
+                                            <td class="align-middle"><i class="marker marker-dot m-0 me-2 text-danger"></i> Pending</td>
+                                            <td class="align-middle">
+                                                <div class="avatar-group">
+                                                    <div class="avatar avatar-circle">
+                                                        <img src="{% static 'images/users/avatar-6.png' %}" alt="Avatar image" class="avatar-2xs">
+                                                    </div>
+                                                    <div class="avatar avatar-circle">
+                                                        <img src="{% static 'images/users/avatar-7.png' %}" alt="Avatar image" class="avatar-2xs">
+                                                    </div>
+                                                    <div class="avatar avatar-circle">
+                                                        <img src="{% static 'images/users/avatar-8.png' %}" alt="Avatar image" class="avatar-2xs">
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="align-middle">San Francisco</td>
+                                            <td class="align-middle">
+                                                <div class="">
+                                                    <h6 class="">20%</h6>
+                                                    <div class="progress progress-sm">
+                                                        <div class="progress-bar bg-primary" style="width: 20%"></div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="align-middle">23/04/2023</td>
+                                            <td class="align-middle">28/04/2023</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="align-middle">872048</td>
+                                            <td class="align-middle"><i class="marker marker-dot m-0 me-2 text-success"></i> Moving</td>
+                                            <td class="align-middle">
+                                                <div class="avatar-group">
+                                                    <div class="avatar avatar-circle">
+                                                        <img src="{% static 'images/users/avatar-5.png' %}" alt="Avatar image" class="avatar-2xs">
+                                                    </div>
+                                                    <div class="avatar avatar-circle">
+                                                        <img src="{% static 'images/users/avatar-4.png' %}" alt="Avatar image" class="avatar-2xs">
+                                                    </div>
+                                                    <div class="avatar avatar-circle">
+                                                        <img src="{% static 'images/users/avatar-1.png' %}" alt="Avatar image" class="avatar-2xs">
+                                                    </div>
+                                                    <div class="avatar avatar-circle">
+                                                        <img src="{% static 'images/users/avatar-2.png' %}" alt="Avatar image" class="avatar-2xs">
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="align-middle">Edinburgh</td>
+                                            <td class="align-middle">
+                                                <div class="">
+                                                    <h6 class="">75%</h6>
+                                                    <div class="progress progress-sm">
+                                                        <div class="progress-bar bg-primary" style="width: 75%"></div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="align-middle">26/04/2023</td>
+                                            <td class="align-middle">30/04/2023</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="align-middle">324712</td>
+                                            <td class="align-middle"><i class="marker marker-dot m-0 me-2 text-warning"></i> Hold</td>
+                                            <td class="align-middle">
+                                                <div class="avatar-group">
+                                                    <div class="avatar avatar-circle">
+                                                        <img src="{% static 'images/users/avatar-3.png' %}" alt="Avatar image" class="avatar-2xs">
+                                                    </div>
+                                                    <div class="avatar avatar-circle">
+                                                        <img src="{% static 'images/users/avatar-4.png' %}" alt="Avatar image" class="avatar-2xs">
+                                                    </div>
+                                                    <div class="avatar avatar-circle">
+                                                        <img src="{% static 'images/users/avatar-5.png' %}" alt="Avatar image" class="avatar-2xs">
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="align-middle">Tokyo</td>
+                                            <td class="align-middle">
+                                                <div class="">
+                                                    <h6 class="">30%</h6>
+                                                    <div class="progress progress-sm">
+                                                        <div class="progress-bar bg-primary" style="width: 30%"></div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="align-middle">26/06/2023</td>
+                                            <td class="align-middle">30/06/2023</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="align-middle">128747</td>
+                                            <td class="align-middle"><i class="marker marker-dot m-0 me-2 text-success"></i> Moving</td>
+                                            <td class="align-middle">
+                                                <div class="avatar-group">
+                                                    <div class="avatar avatar-circle">
+                                                        <img src="{% static 'images/users/avatar-6.png' %}" alt="Avatar image" class="avatar-2xs">
+                                                    </div>
+                                                    <div class="avatar avatar-circle">
+                                                        <img src="{% static 'images/users/avatar-7.png' %}" alt="Avatar image" class="avatar-2xs">
+                                                    </div>
+                                                    <div class="avatar avatar-circle">
+                                                        <img src="{% static 'images/users/avatar-8.png' %}" alt="Avatar image" class="avatar-2xs">
+                                                    </div>
+                                                    <div class="avatar avatar-circle">
+                                                        <img src="{% static 'images/users/avatar-5.png' %}" alt="Avatar image" class="avatar-2xs">
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="align-middle">New York</td>
+                                            <td class="align-middle">
+                                                <div class="">
+                                                    <h6 class="">60%</h6>
+                                                    <div class="progress progress-sm">
+                                                        <div class="progress-bar bg-primary" style="width: 60%"></div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="align-middle">10/05/2023</td>
+                                            <td class="align-middle">15/05/2023</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="align-middle">415423</td>
+                                            <td class="align-middle"><i class="marker marker-dot m-0 me-2 text-danger"></i> Pending</td>
+                                            <td class="align-middle">
+                                                <div class="avatar-group">
+                                                    <div class="avatar avatar-circle">
+                                                        <img src="{% static 'images/users/avatar-2.png' %}" alt="Avatar image" class="avatar-2xs">
+                                                    </div>
+                                                    <div class="avatar avatar-circle">
+                                                        <img src="{% static 'images/users/avatar-6.png' %}" alt="Avatar image" class="avatar-2xs">
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="align-middle">London</td>
+                                            <td class="align-middle">
+                                                <div class="">
+                                                    <h6 class="">72%</h6>
+                                                    <div class="progress progress-sm">
+                                                        <div class="progress-bar bg-primary" style="width: 72%"></div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="align-middle">05/06/2023</td>
+                                            <td class="align-middle">26/06/2023</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% comment %} End Order Progress {% endcomment %}
+        </div>
+        {% endblock %}
+
+{% block footer %}
+<footer class="footer">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-sm-6">
+                <script>document.write(new Date().getFullYear())</script> © AMP.
+            </div>
+            <div class="col-sm-6">
+                <div class="text-sm-end d-none d-sm-block">
+                    Crafted with <i class="mdi mdi-heart text-danger"></i> by <a href="#" target="_blank" class="text-muted">AMPstudio</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+{% endblock %}
+
+
+{% comment %} {% block right_sidebar %}
+    <div class="custom-setting bg-primary pe-0 d-flex flex-column rounded-start">
+        <button type="button" class="btn btn-wide border-0 text-white fs-20 avatar-sm rounded-end-0" id="light-dark-mode">
+            <i class="mdi mdi-brightness-7 align-middle"></i>
+            <i class="mdi mdi-white-balance-sunny align-middle"></i>
+        </button>
+        <button type="button" class="btn btn-wide border-0 text-white fs-20 avatar-sm" data-toggle="fullscreen">
+            <i class="mdi mdi-arrow-expand-all align-middle"></i>
+        </button>
+        <button type="button" class="btn btn-wide border-0 text-white fs-16 avatar-sm" id="layout-dir-btn">
+            <span>RTL</span>
+        </button>
+    </div>
+{% endblock %} {% endcomment %}
+
+
+{% block right_sidebar %}
+    {% include 'partials/right_sidebar.html' %}
+{% endblock %}
+
+{% block vis_charts %}
+    {% include 'partials/charts_vis.html' %}
+{% endblock %} 

@@ -1,0 +1,149 @@
+
+
+
+<div class="content container-fluid">
+				
+		
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="page-title">Employee</h3>
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Employee</li>
+                </ul>
+            </div>
+            <div class="col-auto float-end ms-auto">
+                {% if perms.employee.import_employeedetails %}
+                    <a href="/admin/employee/employeedetails/import/?embed=True&next={{request.path}}" class="btn btn-outline-primary rounded-5 me-3" id="importActionButton"> <i class="la la-cloud-upload-alt"></i> Import</a>
+                {% endif %}
+                {% if perms.employee.export_employeedetails %}
+                    <a href="/admin/employee/employeedetails/export/?embed=True&next={{request.path}}" class="btn btn-outline-primary rounded-5 me-3" id="exportActionButton"> <i class="la la-cloud-download-alt"></i> Export</a>
+                {% endif %}
+                {% if perms.employee.add_employeedetails %}
+                    <a href="/admin/employee/employeedetails/add/?embed=True&next={{request.path}}" class="btn add-btn" ><i class="fa-solid fa-plus"></i> Add Employee</a>
+                {% endif %}
+                
+            </div>
+        </div>
+    </div>
+    <!-- /Page Header -->
+    
+
+    
+    <div class="row">
+        <div class="col-md-12">
+            <div class="table-responsive">
+                <table class="table table-striped display custom-table datatable" id="employtbl" style="width:100%">
+                    <thead>
+                        <tr style="width: 100%">
+                            <th>Name</th>
+                            <th>Employee ID</th>
+                            <th>Gender</th>
+                            <th>Department</th>
+                            <th>Position</th>
+                            <th>Station</th>
+                            <th>Nationality</th>
+                            <th>Marital Status</th>
+                            <th class="text-end no-sort">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                       
+                        
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /Page Content -->
+
+{% endblock %}
+
+
+
+{% block js %}
+<script src="{% static 'assets/js/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'assets/js/dataTables.bootstrap5.min.js' %}"></script>
+
+<!-- Responsive examples -->
+<script src="{% static 'assets/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'assets/js/responsive.bootstrap5.min.js' %}"></script>
+
+<script type="text/javascript">
+    
+    
+    const columnData = [
+        { 
+            data: null,
+            width: "9rem",
+            render: (data, type, row) => {
+                const image = row.picture &&
+      (row.picture.startsWith("http") || row.picture.startsWith("https"))
+        ? `<img src="${row.picture}" alt="User Image">`
+        : `<img src="/media/${row.picture}" alt="User Image">;`
+                return `<h2 class="table-avatar">
+                            <a href="/employee/${row.id}" class="avatar">
+                                ${ row.picture ? image : '<img src="/static/assets/img/profiles/avatar-21.jpg" alt="User Image">' }
+                            </a>
+                            <a href="/employee/${row.id}">${row.first_name} ${row.last_name}</a>
+                        </h2>`
+            }
+        }, 
+        { data: "employee_id", width: "3rem" },
+        { data: "gender", width: "3rem" }, 
+        { data: "department__name", width: "4rem" },
+        { data: "position__name", width: "3rem" },
+        { 
+            data: "station",
+            width: "4rem" 
+        }, 
+        { data: "nationality", width: "4rem"}, 
+        { data: "marital_status", width: "3rem"}, 
+        { 
+            data: null ,
+            width: "3rem",
+            render: (data, type, row) => {
+                return `<div class="dropdown dropdown-action text-end">
+                            <a href="#" class="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
+                            <div class="dropdown-menu dropdown-menu-right">
+                                {% if perms.employee.change_employeedetails %}
+                                    <a class="dropdown-item" href="/admin/employee/employeedetails/${row.id}/change/?embed=True&next={{request.path}}"><i class="fa-solid fa-pencil m-r-5"></i> Edit</a>
+                                {% endif %}
+                                {% if perms.employee.delete_employeedetails %}
+                                    <a class="dropdown-item" href="/admin/employee/employeedetails/${row.id}/delete/?embed=True&next={{request.path}}"><i class="fa-regular fa-trash-can m-r-5"></i> Delete</a>
+                                {% endif %}
+                            </div>
+                        </div>`
+            }
+        }
+    ]
+        
+    document.body.onload = () => {
+        let currentPage = 1;
+        const urlPath = document.location.origin;
+
+        let employeeDataTable = new DataTable('#employtbl', {
+            
+            columns: columnData,
+            serverSide: true,
+            ajax: {
+                url: `${urlPath}/employee/employees/paginate/?page=${currentPage}`,
+                contentType: 'application/json; charset=utf-8',
+                dataSrc: (json)=>{
+                    // console.log(json.data);
+                    return json.data
+                }
+            },
+            paging: true,
+            lengthMenu: [[10, 20, 30, 50, -1], [10, 20, 30, 50, 'All']],
+            pageLength: 30,
+            responsive: true,
+            autoWidth: false,
+            order: [[ 0, 'desc' ]],
+            dom: 'Bfrtip',
+        })
+    }
+</script>
+{% endblock %} 

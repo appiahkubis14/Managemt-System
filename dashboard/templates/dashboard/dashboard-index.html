@@ -1,4 +1,4 @@
-{% extends 'ampPortal/web_base.html' %}
+{% extends 'web_base.html' %}
 {% load i18n static %}
 {% load custom_filters %}
 
@@ -29,13 +29,12 @@
         </div>
     </div>
 </div>
-<!--    end row -->
-{% endblock %}
+
+{% endblock greeting %}
 
 {% block main_content %}
     <div class="row">
         <div class="col-xxl-9">
-            {% comment %} Overall Sales {% endcomment %}
             <div class="card">
                 <div class="card-header">
                     <div class="card-icon">
@@ -100,7 +99,7 @@
                     <div id="sales_figures" data-colors='["--bs-info", "--bs-success"]' class="apex-charts" dir="ltr"></div>
                 </div>
             </div>
-            {% comment %} End Overall Sales {% endcomment %}
+            
 
             {% comment %} Total Balance {% endcomment %}
             <div class="row">
@@ -1103,6 +1102,8 @@
     <!-- end row -->
 {% endblock %}
 
+
+
 {% block footer %}
 <footer class="footer">
     <div class="container-fluid">
@@ -1143,4 +1144,4 @@
 
 {% block vis_charts %}
     {% include 'partials/charts_vis.html' %}
-{% endblock %}
+{% endblock %} 
