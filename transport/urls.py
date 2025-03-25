@@ -15,6 +15,7 @@ urlpatterns = [
     path("vehicles/<int:id>/delete/", vehicle_delete, name='vehicle_delete'),  # Delete vehicle
     
     path("driver_assistant_assignment/", driver_assistant_assignment, name='driver_assistant_assignment'),  # Render driver template
+    path("delivery_schedule/", delivery_schedule, name='delivery_schedule'),  # Render driver template
 ]
 
 

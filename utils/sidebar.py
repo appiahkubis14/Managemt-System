@@ -43,7 +43,7 @@ class Sidebar:
                 "icon": "fa fa-truck",
                 "sub_items": {
                     "View All Vehicle": {"icon": "fa fa-car-side", "url": "/transport/vehicles/"},
-                    "Delivery Schedules": {"icon": "fa fa-calendar", "url": "/transport/schedules/"},
+                    "Delivery Schedules": {"icon": "fa fa-calendar", "url": "/transport/delivery_schedule/"},
                     "Live Tracking": {"icon": "fa fa-map-marker-alt", "url": "/transport/tracking/"},
                     "Driver Assignments": {"icon": "fa fa-id-badge", "url": "/transport/driver_assistant_assignment/"},
                 },

@@ -10,7 +10,10 @@ import requests
 from django.views.decorators.csrf import csrf_exempt
 
 from utils import sidebar
-from .models import Vehicle, DriverVehicleAssignment, VehicleAssignmentHistory, Driver, DriverAssistant
+from .models import Vehicle, DriverVehicleAssignment,\
+VehicleAssignmentHistory, Driver, DriverAssistant\
+, DispatchRequest
+
 from .serializers import VehicleSerializer
 from django.views.decorators.http import require_http_methods
 
@@ -159,3 +162,15 @@ def driver_assistant_assignment(request):
         "assistants": assistants
     }
     return render(request, "transport/driver_assistant_assignment.html", context)
+
+
+def delivery_schedule(request):
+    delivery_schedule = DispatchRequest.objects.all()
+    vehicles = Vehicle.objects.all()
+    context = {
+        "path": request.path or "",
+        "sidebar_items": sidebar.Sidebar.sidebar_items,
+        "delivery_schedule": delivery_schedule,
+        "vehicles": vehicles,
+    }
+    return render(request, "transport/delivery_schedule.html", context)
