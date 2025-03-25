@@ -10,7 +10,7 @@ import requests
 from django.views.decorators.csrf import csrf_exempt
 
 from utils import sidebar
-from .models import Vehicle, DriverVehicleAssignment, VehicleAssignmentHistory
+from .models import Vehicle, DriverVehicleAssignment, VehicleAssignmentHistory, Driver, DriverAssistant
 from .serializers import VehicleSerializer
 from django.views.decorators.http import require_http_methods
 
@@ -140,3 +140,22 @@ def import_vehicles(request):
             messages.error(request, f"Error processing file: {e}")
             
     return redirect('dashboard_transport')
+
+
+
+#Assignment of drivers to vehicles
+def driver_assistant_assignment(request):
+    assignments = DriverVehicleAssignment.objects.select_related("driver", "assigned_vehicle", "assigned_assistant").all()
+    drivers = Driver.objects.all()
+    vehicles = Vehicle.objects.all()
+    assistants = DriverAssistant.objects.all()
+    print(assignments.values())
+    context = {
+        "path": request.path or "",
+        "sidebar_items": sidebar.Sidebar.sidebar_items,
+        "assignments": assignments,
+        "drivers": drivers,
+        "vehicles": vehicles,
+        "assistants": assistants
+    }
+    return render(request, "transport/driver_assistant_assignment.html", context)

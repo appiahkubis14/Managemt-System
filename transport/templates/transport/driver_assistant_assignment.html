@@ -1,0 +1,202 @@
+
+{% extends 'transport/transport_base.html' %}
+{% load i18n static %}
+{% load custom_filters %}
+
+
+{% block add_new %}
+<!-- Add Vehicle Modal -->
+        <div class="modal fade" id="addVehicleModal" tabindex="-1" aria-labelledby="addVehicleModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="addVehicleModalLabel">Add New Vehicle</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form method="POST" enctype="multipart/form-data" id="addVehicleForm" action="/transport/vehicles/create/">
+                                {% csrf_token %}
+                                
+                                <div class="row">
+                                    <!-- Driver Dropdown -->
+                                    <div class="col-md-6">
+                                        <label class="form-label">Driver</label>
+                                        <select name="driver" class="form-control" required>
+                                            <option value="" disabled selected>Select Driver</option>
+                                            {% for driver in drivers %}
+                                                <option value="{{ driver.id }}">{{ driver.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <!-- Assistant Dropdown -->
+                                    <div class="col-md-6">
+                                        <label class="form-label">Driver Assistant</label>
+                                        <select name="assistant" class="form-control">
+                                            <option value="" disabled selected>Select Assistant</option>
+                                            {% for assistant in assistants %}
+                                                <option value="{{ assistant.id }}">{{ assistant.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <!-- Vehicle Dropdown -->
+                                    <div class="col-md-6">
+                                        <label class="form-label">Vehicle</label>
+                                        <select name="vehicle" class="form-control" required>
+                                            <option value="" disabled selected>Select Vehicle</option>
+                                            {% for vehicle in vehicles %}
+                                                <option value="{{ vehicle.id }}">{{ vehicle.vehicle_type }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-end mt-3">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Save
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                        <i class="fas fa-times"></i> Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+
+            {% endblock %}
+
+
+            {% block content %}
+            <div class="card-body">
+                <div class="">
+                    <table id="vehicleTable" class="table table-striped table-bordered datatable">
+                        <thead class="table-dark">
+                            <tr>
+                                
+                                <th>Driver</th>
+                                <th>Driver Assistant</th>
+                                <th> Vehicle License Plate</th>
+                                <th>Vehicle Type</th>
+                                <th>Status</th>
+                                <th>Vehicle Image</th>
+                                <th>Actions</th>
+                                
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for assignment in assignments %}
+                            <tr id="vehicleRow{{ vehicle.id }}">
+                                <td>{{ assignment.driver.name }}</td>
+                                <td>{{ assignment.assigned_assistant.name }}</td>
+                                <td>{{ assignment.assigned_vehicle.license_plate }}</td>
+                                <td>{{ assignment.assigned_vehicle.vehicle_type }}</td>
+                                
+                                <td>
+                                    {% if assignment.assigned_vehicle.status == 'available' %}
+                                        <span class="badge bg-success">Available</span>
+                                    {% elif assignment.assigned_vehicle.status == 'maintenance' %}
+                                        <span class="badge bg-warning">In Maintenance</span>
+                                    {% elif assignment.assigned_vehicle.status == 'in_use' %}
+                                        <span class="badge bg-danger">In Use</span>
+                                    {% endif %}
+                                </td>
+                                
+                                <td>
+                                    {% if assignment.assigned_vehicle.vehicle_image %}
+                                        <a href="#" data-bs-toggle="modal" data-bs-target="#imageModal{{ assignment.assigned_vehicle.id }}">
+                                            <img src="{{ assignment.assigned_vehicle.vehicle_image.url }}" alt="Vehicle Image" class="img-thumbnail" width="30">
+                                        </a>
+                                        <div class="modal fade" id="imageModal{{ assignment.assigned_vehicle.id }}" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Vehicle Image</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body text-center">
+                                                        <img src="{{ assignment.assigned_vehicle.vehicle_image.url }}" alt="Full Size Vehicle Image" class="img-fluid">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted">No Image</span>
+                                    {% endif %}
+                                </td>
+            
+                                <td>
+                                    <div class="dropdown">
+                                        <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <a class="dropdown-item edit-vehicle" href="#" data-bs-toggle="modal" data-bs-target="#editModal{{ assignment.assigned_vehicle.id }}" data-id="{{ vehicle.id }}">
+                                                    Edit
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item text-danger delete-vehicle" href="#" onclick="deleteVehicle({{ assignment.assigned_vehicle.id }})">
+                                                    Delete
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+            
+                            <!-- Edit assignment.assigned_vehicle Modal -->
+                            <div class="modal fade" id="editModal{{ assignment.assigned_vehicle.id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Edit assignment.assigned_vehicle</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form id="editassignment.assigned_vehicleForm{{ assignment.assigned_vehicle.id }}" action="{% url 'vehicle_update' assignment.assigned_vehicle.id %}" method="POST">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="_method" value="PUT">
+            
+                                                <div class="mb-3">
+                                                    <label class="form-label">License Plate</label>
+                                                    <input type="text" class="form-control" name="license_plate" value="{{ assignment.assigned_vehicle.license_plate }}">
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">vehicle Type</label>
+                                                    <input type="text" class="form-control" name="assignment.assigned_vehicle_type" value="{{ assignment.assigned_vehicle.vehicle_type }}">
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Make</label>
+                                                    <input type="text" class="form-control" name="make" value="{{ assignment.assigned_vehicle.make }}">
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Model</label>
+                                                    <input type="text" class="form-control" name="model" value="{{ assignment.assigned_vehicle.model }}">
+                                                </div>
+            
+                                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+            
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">No assignment.assigned_vehicles found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endblock %}
+        </div>
+    </div>
+</div>
+

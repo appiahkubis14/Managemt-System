@@ -7,6 +7,8 @@ from django.utils import timezone
 from django.utils.timezone import now
 from django.dispatch import receiver
 from django.db.models.signals import pre_save
+from django.utils.timezone import now
+
 
 class Vehicle(models.Model):
     license_plate = models.CharField(max_length=128)
@@ -56,6 +58,7 @@ class DriverAssistant(models.Model):
 class DriverVehicleAssignment(models.Model):
     driver = models.ForeignKey(Driver, on_delete=models.CASCADE,null=True, blank=True)
     assigned_vehicle = models.OneToOneField(Vehicle, on_delete=models.SET_NULL, null=True, blank=True)
+    assigned_assistant = models.OneToOneField(DriverAssistant, on_delete=models.SET_NULL, null=True, blank=True)
     assigned_date = models.DateTimeField(default=timezone.now, null=True, blank=True)
 
     def __str__(self):
@@ -80,7 +83,6 @@ class VehicleAssignmentHistory(models.Model):
 
     def __str__(self):
         return f"History: {self.vehicle.license_plate} - {self.driver.name if self.driver else 'No Driver'}"
-
 
 
 @receiver(pre_save, sender=DriverVehicleAssignment)
@@ -115,9 +117,6 @@ def handle_assistant_assignment(sender, instance, **kwargs):
         old_assignment.delete()  # Remove old assignment
 
 
-
-
-
 class MaintenanceRequest(models.Model):
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
     requested_by = models.CharField(max_length=100)
@@ -142,22 +141,3 @@ class DispatchRequest(models.Model):
 
     def __str__(self):
         return f"Dispatch {self.id} - {self.status}"
-
-class InventoryItem(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField(blank=True, null=True)
-    quantity = models.PositiveIntegerField()
-    reorder_level = models.PositiveIntegerField()
-
-    def __str__(self):
-        return self.name
-
-class InventoryTransaction(models.Model):
-    item = models.ForeignKey(InventoryItem, on_delete=models.CASCADE)
-    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, blank=True, null=True)
-    quantity_used = models.PositiveIntegerField()
-    transaction_date = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.item.name} used for {self.vehicle.license_plate}"
-

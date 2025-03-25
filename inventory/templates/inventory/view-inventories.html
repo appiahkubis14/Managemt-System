@@ -1,0 +1,447 @@
+{% extends 'web_base.html' %}
+{% load i18n static %}
+{% load custom_filters %}
+
+{% block header %}
+    {% include 'partials/header.html' %}
+{% endblock %}
+
+{% block greeting %}
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-flex align-items-center justify-content-between">
+            <div>
+                <h4 class="fs-16 fw-semibold mb-1 mb-md-2">Vehicle Management</h4>
+                <p class="text-muted mb-0">List of all registered vehicles.</p>
+            </div>
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="javascript: void(0);">AMP</a></li>
+                    {% for crumb in path|getcrumbs %}
+                        {% if forloop.last %}
+                            <li class="breadcrumb-item active">{{ crumb }}</li>
+                        {% else %}
+                            <li class="breadcrumb-item"><a href="/{{ crumb|lower }}">{{ crumb }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock greeting %}
+
+{% block main_content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="card-title">Vehicle Details</h4>
+                <div class="mb-3">
+                    <!-- Export Button -->
+                    <a href="{% url 'export_vehicles' %}" class="btn btn-primary me-2">
+                        <i class="fas fa-file-export"></i> Export
+                    </a>
+                
+                    <!-- Import Button with Modal -->
+                    <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#importVehicleModal">
+                        <i class="fas fa-file-import"></i> Import
+                    </button>
+                
+                    <!-- Add Vehicle Button -->
+                    <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#addVehicleModal">
+                        <i class="fas fa-plus-circle"></i> Add Vehicle
+                    </button>
+                </div>
+                
+                <!-- Import Vehicle Modal -->
+                <div class="modal fade" id="importVehicleModal" tabindex="-1" aria-labelledby="importVehicleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Import Vehicles</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form action="{% url 'import_vehicles' %}" method="POST" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label for="csvFile" class="form-label">Upload CSV File</label>
+                                        <input type="file" name="csv_file" class="form-control" id="csvFile" required>
+                                    </div>
+                                    <div class="text-end">
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-upload"></i> Upload
+                                        </button>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                            <i class="fas fa-times"></i> Cancel
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                
+                <!-- Add Vehicle Modal -->
+                <div class="modal fade" id="addVehicleModal" tabindex="-1" aria-labelledby="addVehicleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addVehicleModalLabel">Add New Vehicle</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form method="POST" enctype="multipart/form-data" id="addVehicleForm" action="/transport/vehicles/create/">
+                                    {% csrf_token %}
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label class="form-label">License Plate</label>
+                                            <input type="text" name="license_plate" class="form-control" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Vehicle Type</label>
+                                            <select name="vehicle_type" class="form-control">
+                                                <option value="hatchback">Hatchback</option>
+                                                <option value="pickup">Pickup</option>
+                                                <option value="suv">Suv</option>
+                                                <option value="sedan">Sedan</option>
+                                                <option value="three wheeler">Three Wheeler</option>
+                                                <option value="trailer">Trailer</option>
+                                                <option value="trailer_head">Trailer Head</option>
+                                                <option value="truck">Truck</option>
+                                                <option value="two wheeler">Two Wheeler</option>
+                                            </select>
+                                            
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Make</label>
+                                            <input type="text" name="make" class="form-control" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Model</label>
+                                            <input type="text" name="model" class="form-control" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Year</label>
+                                            <input type="number" name="year" class="form-control" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Manufacture Date</label>
+                                            <input type="date" name="mfg_year_month" class="form-control">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Date of Registration</label>
+                                            <input type="date" name="date_of_registration" class="form-control">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Status</label>
+                                            <select name="status" class="form-control">
+                                                <option value="available">Available</option>
+                                                <option value="maintenance">In Maintenance</option>
+                                                <option value="in_use">In Use</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <label class="form-label">Vehicle Image</label>
+                                            <input type="file" name="vehicle_image" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="text-end mt-3">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save"></i> Save Vehicle
+                                        </button>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                            <i class="fas fa-times"></i> Cancel
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>                
+            </div>
+            <div class="card-body">
+                <div class="">
+                    <table id="vehicleTable" class="table table-striped table-bordered datatable">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>License Plate</th>
+                                <th>Type</th>
+                                <th>Make</th>
+                                <th>Model</th>
+                                <th>Year</th>
+                                <th>Status</th>
+                                <th>Registered Date</th>
+                                <th>Driver</th>
+                                <th>Assistant</th>
+                                <th>Image</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for vehicle in vehicles %}
+                            <tr id="vehicleRow{{ vehicle.id }}">
+                                <td>{{ vehicle.license_plate }}</td>
+                                <td>{{ vehicle.vehicle_type }}</td>
+                                <td>{{ vehicle.make }}</td>
+                                <td>{{ vehicle.model }}</td>
+                                <td>{{ vehicle.year }}</td>
+                                <td>
+                                    {% if vehicle.status == 'available' %}
+                                        <span class="badge bg-success">Available</span>
+                                    {% elif vehicle.status == 'maintenance' %}
+                                        <span class="badge bg-warning">In Maintenance</span>
+                                    {% elif vehicle.status == 'in_use' %}
+                                        <span class="badge bg-danger">In Use</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Unknown</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ vehicle.date_of_registration|date:"Y-m-d" }}</td>
+                                
+                                {# Fetch assignment linked to this vehicle #}
+                                {% with assignments=assignment|dictsort:"id"|first %}
+                                <td>
+                                    {% if assignments and assignments.id == vehicle.id %}
+                                        {{ assignments.driver.name|default:"No Driver Assigned" }}
+                                    {% else %}
+                                        <span class="text-muted">No Driver Assigned</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if assignments and assignments.id == vehicle.id %}
+                                        {{ assignments.driver_assistant.name|default:"No Assistant Assigned" }}
+                                    {% else %}
+                                        <span class="text-muted">No Assistant Assigned</span>
+                                    {% endif %}
+                                </td>
+                                {% endwith %}
+                                
+                                <td>
+                                    {% if vehicle.vehicle_image %}
+                                        <a href="#" data-bs-toggle="modal" data-bs-target="#imageModal{{ vehicle.id }}">
+                                            <img src="{{ vehicle.vehicle_image.url }}" alt="Vehicle Image" class="img-thumbnail" width="30">
+                                        </a>
+                                        <div class="modal fade" id="imageModal{{ vehicle.id }}" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Vehicle Image</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body text-center">
+                                                        <img src="{{ vehicle.vehicle_image.url }}" alt="Full Size Vehicle Image" class="img-fluid">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted">No Image</span>
+                                    {% endif %}
+                                </td>
+            
+                                <td>
+                                    <div class="dropdown">
+                                        <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item edit-vehicle" href="#" data-bs-toggle="modal" data-bs-target="#editModal{{ vehicle.id }}" data-id="{{ vehicle.id }}">Edit</a></li>
+                                            <li><a class="dropdown-item text-danger delete-vehicle" href="" data-id="{{ vehicle.id }}" onclick="/employees/delete/{{ vehicle.id }}">Delete</a></li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+            
+                            <!-- Edit Modal -->
+                            <div class="modal fade" id="editModal{{ vehicle.id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Edit Vehicle</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form id="editVehicleForm{{ vehicle.id }}" 
+                                            action="{% url 'vehicle_update' vehicle.id %}" 
+                                            method="POST">
+                                          {% csrf_token %}
+                                          <input type="hidden" name="_method" value="PUT"> <!-- Simulating PUT -->
+                                      
+                                          <div class="mb-3">
+                                              <label class="form-label">License Plate</label>
+                                              <input type="text" class="form-control" name="license_plate" value="{{ vehicle.license_plate }}">
+                                          </div>
+                                          <div class="mb-3">
+                                              <label class="form-label">Type</label>
+                                              <input type="text" class="form-control" name="vehicle_type" value="{{ vehicle.vehicle_type }}">
+                                          </div>
+                                          <div class="mb-3">
+                                              <label class="form-label">Make</label>
+                                              <input type="text" class="form-control" name="make" value="{{ vehicle.make }}">
+                                          </div>
+                                          <div class="mb-3">
+                                              <label class="form-label">Model</label>
+                                              <input type="text" class="form-control" name="model" value="{{ vehicle.model }}">
+                                          </div>
+                                          <div class="mb-3">
+                                              <label class="form-label">Year</label>
+                                              <input type="number" class="form-control" name="year" value="{{ vehicle.year }}">
+                                          </div>
+                                      
+                                          <button type="submit" class="btn btn-primary">Save Changes</button>
+                                      </form>
+                                      
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+            
+                            {% empty %}
+                            <tr>
+                                <td colspan="11" class="text-center text-muted">No vehicles found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}
+<footer class="footer">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-sm-6">
+                <script>document.write(new Date().getFullYear())</script> © AMP.
+            </div>
+            <div class="col-sm-6">
+                <div class="text-sm-end d-none d-sm-block">
+                    Crafted with <i class="mdi mdi-heart text-danger"></i> by <a href="#" target="_blank" class="text-muted">AMPstudio</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".delete-vehicle").forEach(button => {
+            button.addEventListener("click", function () {
+                const vehicleId = this.getAttribute("data-id");
+                console.log("Deleting vehicle:", vehicleId);
+                
+                if (confirm("Are you sure you want to delete this vehicle?")) {
+                    fetch(`${vehicleId}/delete/`, { // Ensure the correct URL
+                        method: "DELETE",
+                        headers: {
+                            "X-CSRFToken": getCSRFToken()
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.message) {
+                            document.getElementById(`vehicleRow${vehicleId}`).remove();
+                        } else {
+                            alert("Error deleting vehicle.");
+                        }
+                    });
+                }
+            });
+        });
+    });
+    
+    // Function to get CSRF token from cookies
+    function getCSRFToken() {
+        let cookieValue = null;
+        let cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            let cookie = cookies[i].trim();
+            if (cookie.startsWith("csrftoken=")) {
+                cookieValue = cookie.substring("csrftoken=".length, cookie.length);
+                break;
+            }
+        }
+        return cookieValue;
+    }
+    
+    
+    
+    // Function to get CSRF token from the page
+    function getCSRFToken() {
+        return document.querySelector("[name=csrfmiddlewaretoken]").value;
+    }
+    
+
+    document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("addVehicleForm").addEventListener("submit", function (event) {
+            event.preventDefault();  // Prevent default form submission
+    
+            let formData = new FormData(this);  // Create FormData for file upload
+    
+            fetch("/transport/vehicles/create/", {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.id) {  // If the vehicle was successfully created
+                    alert("Vehicle added successfully!");
+                    location.reload();  // Refresh the page or update the table dynamically
+                } else {
+                    alert("Error: " + JSON.stringify(data));  // Show validation errors
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        });
+    });
+
+</script>
+<!-- jQuery and DataTables JS -->
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('#vehicleTable').DataTable({
+            paging: true,
+            lengthMenu: [[10, 20, 30, 50, -1], [10, 20, 30, 50, "All"]],
+            pageLength: 10,
+            responsive: true,
+            autoWidth: false,
+            order: [[0, "desc"]],
+            pagingType: "full_numbers",  // Ensures pagination is at the bottom
+            language: {
+                search: "Filter records:",
+                lengthMenu: "Show _MENU_ entries",
+                info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                paginate: {
+                    first: "First",
+                    last: "Last",
+                    next: "Next",
+                    previous: "Previous"
+                }
+            }
+        });
+    });
+</script>
+
+{% endblock %}

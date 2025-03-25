@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Vehicle, Driver, DriverAssistant, DriverVehicleAssignment, AssistantDriverVehicleAssignment, VehicleAssignmentHistory, MaintenanceRequest, DispatchRequest, InventoryItem, InventoryTransaction
+from .models import Vehicle, Driver, DriverAssistant, DriverVehicleAssignment, AssistantDriverVehicleAssignment, VehicleAssignmentHistory, MaintenanceRequest, DispatchRequest
 
 
 @admin.register(Vehicle)
@@ -60,15 +60,15 @@ class DispatchRequestAdmin(admin.ModelAdmin):
     list_filter = ('status', 'created_at')
 
 
-@admin.register(InventoryItem)
-class InventoryItemAdmin(admin.ModelAdmin):
-    list_display = ('name', 'quantity', 'reorder_level')
-    search_fields = ('name',)
+# @admin.register(InventoryItem)
+# class InventoryItemAdmin(admin.ModelAdmin):
+#     list_display = ('name', 'quantity', 'reorder_level')
+#     search_fields = ('name',)
 
 
-@admin.register(InventoryTransaction)
-class InventoryTransactionAdmin(admin.ModelAdmin):
-    list_display = ('item', 'vehicle', 'quantity_used', 'transaction_date')
-    search_fields = ('item__name', 'vehicle__license_plate')
-    list_filter = ('transaction_date',)
+# @admin.register(InventoryTransaction)
+# class InventoryTransactionAdmin(admin.ModelAdmin):
+#     list_display = ('item', 'vehicle', 'quantity_used', 'transaction_date')
+#     search_fields = ('item__name', 'vehicle__license_plate')
+#     list_filter = ('transaction_date',)
 

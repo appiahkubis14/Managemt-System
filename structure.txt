@@ -1,0 +1,195 @@
+from django.db import models
+from django.contrib.auth.models import User
+
+# Employee Management
+class Department(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+class Employee(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True)
+    role = models.CharField(max_length=100)
+    contact_number = models.CharField(max_length=15)
+
+    def __str__(self):
+        return self.user.username
+
+
+# Inventory Management
+class InventoryItem(models.Model):
+    name = models.CharField(max_length=255)
+    category = models.CharField(max_length=100)
+    quantity = models.IntegerField()
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+    added_on = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+class InventoryReceipt(models.Model):
+    item = models.ForeignKey(InventoryItem, on_delete=models.CASCADE)
+    received_quantity = models.IntegerField()
+    received_date = models.DateTimeField(auto_now_add=True)
+    supplier = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f"{self.item.name} - {self.received_quantity}"
+
+
+
+
+# Transport & Logistics
+class Vehicle(models.Model):
+    license_plate = models.CharField(max_length=20, unique=True)
+    model = models.CharField(max_length=100)
+    capacity = models.IntegerField()
+    assigned_driver = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return self.license_plate
+
+class TransportJob(models.Model):
+    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
+    inventory_item = models.ForeignKey(InventoryItem, on_delete=models.SET_NULL, null=True, blank=True)
+    destination = models.CharField(max_length=255)
+    scheduled_date = models.DateField()
+    status = models.CharField(max_length=50, choices=[("pending", "Pending"), ("in_progress", "In Progress"), ("completed", "Completed")])
+
+    def __str__(self):
+        return f"{self.vehicle} - {self.destination}"
+
+# Fleet Maintenance
+class MaintenanceRecord(models.Model):
+    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
+    date = models.DateField()
+    cost = models.DecimalField(max_digits=10, decimal_places=2)
+    description = models.TextField()
+
+    def __str__(self):
+        return f"Maintenance for {self.vehicle} on {self.date}"
+
+
+
+# Warehouse Management
+class Warehouse(models.Model):
+    name = models.CharField(max_length=100)
+    location = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+class WarehouseStock(models.Model):
+    warehouse = models.ForeignKey(Warehouse, on_delete=models.CASCADE)
+    inventory_item = models.ForeignKey(InventoryItem, on_delete=models.CASCADE)
+    quantity = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.inventory_item} in {self.warehouse}"
+
+# Terminal Services Management
+class TerminalActivity(models.Model):
+    activity_type = models.CharField(max_length=50, choices=[("gate_in", "Gate In"), ("gate_out", "Gate Out")])
+    container_id = models.CharField(max_length=50)
+    date = models.DateField()
+
+    def __str__(self):
+        return f"{self.container_id} - {self.activity_type}"
+
+# Freight Forwarding
+class ShippingInstruction(models.Model):
+    reference_number = models.CharField(max_length=100, unique=True)
+    customer_name = models.CharField(max_length=255)
+    status = models.CharField(max_length=50, choices=[("open", "Open"), ("closed", "Closed")])
+    expenses = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
+    def __str__(self):
+        return self.reference_number
+
+
+
+
+
+
+
+
+
+
+
+
+from django.db import models
+
+class ItemCategory(models.TextChoices):
+    VEHICLE = "Vehicle", "Vehicle"
+    FUEL = "Fuel", "Fuel"
+    LUBRICANT = "Lubricant", "Lubricant"
+    MACHINERY = "Machinery", "Machinery"
+    OFFICE_EQUIPMENT = "Office Equipment", "Office Equipment"
+    STATIONERY = "Stationery", "Stationery"
+
+class InventoryItem(models.Model):
+    name = models.CharField(max_length=255)
+    category = models.CharField(max_length=50, choices=ItemCategory.choices)
+    description = models.TextField(blank=True, null=True)
+    quantity = models.PositiveIntegerField(default=0)
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+    date_added = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.get_category_display()})"
+
+class Vehicle(models.Model):
+    inventory_item = models.ForeignKey(InventoryItem, on_delete=models.CASCADE, related_name="vehicles")
+    plate_number = models.CharField(max_length=20, unique=True)
+    make = models.CharField(max_length=100)
+    model = models.CharField(max_length=100)
+    year = models.PositiveIntegerField()
+    assigned_driver = models.ForeignKey('employees.Employee', on_delete=models.SET_NULL, null=True, blank=True)
+    mileage = models.FloatField(default=0.0)
+
+    def __str__(self):
+        return f"{self.plate_number} - {self.make} {self.model}"
+
+class Fuel(models.Model):
+    inventory_item = models.ForeignKey(InventoryItem, on_delete=models.CASCADE, related_name="fuel")
+    fuel_type = models.CharField(max_length=50, choices=[("Diesel", "Diesel"), ("Petrol", "Petrol")])
+    storage_capacity = models.FloatField(help_text="Capacity in liters")
+
+    def __str__(self):
+        return f"{self.fuel_type} ({self.storage_capacity} L)"
+
+class Lubricant(models.Model):
+    inventory_item = models.ForeignKey(InventoryItem, on_delete=models.CASCADE, related_name="lubricants")
+    viscosity_grade = models.CharField(max_length=50)
+    application_area = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f"{self.viscosity_grade} - {self.application_area}"
+
+class Machinery(models.Model):
+    inventory_item = models.ForeignKey(InventoryItem, on_delete=models.CASCADE, related_name="machinery")
+    machine_type = models.CharField(max_length=255)
+    manufacturer = models.CharField(max_length=255)
+    model_number = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return f"{self.machine_type} - {self.model_number}"
+
+class OfficeEquipment(models.Model):
+    inventory_item = models.ForeignKey(InventoryItem, on_delete=models.CASCADE, related_name="office_equipments")
+    brand = models.CharField(max_length=100)
+    model_number = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return f"{self.brand} - {self.model_number}"
+
+class Stationery(models.Model):
+    inventory_item = models.ForeignKey(InventoryItem, on_delete=models.CASCADE, related_name="stationery_items")
+    brand = models.CharField(max_length=100)
+    paper_size = models.CharField(max_length=50, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.brand} - {self.paper_size if self.paper_size else 'N/A'}"

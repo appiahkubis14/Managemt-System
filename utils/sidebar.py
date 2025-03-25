@@ -23,8 +23,8 @@ class Sidebar:
             "Inventory Management": {
                 "icon": "fa fa-box-open",
                 "sub_items": {
-                    "View All Inventory": {"icon": "fa fa-list", "url": "/inventory/view/"},
-                    "Add New Stock": {"icon": "fa fa-plus", "url": "/inventory/add/"},
+                    "View All Inventory": {"icon": "fa fa-list", "url": "/inventory/view-inventories/"},
+                    "Inventory Transactions": {"icon": "fa fa-plus", "url": "/inventory/add/"},
                     "Stock Alerts & Expiry": {"icon": "fa fa-exclamation-circle", "url":"/inventory/alerts/"},
                 },
             },
@@ -45,7 +45,7 @@ class Sidebar:
                     "View All Vehicle": {"icon": "fa fa-car-side", "url": "/transport/vehicles/"},
                     "Delivery Schedules": {"icon": "fa fa-calendar", "url": "/transport/schedules/"},
                     "Live Tracking": {"icon": "fa fa-map-marker-alt", "url": "/transport/tracking/"},
-                    "Driver Assignments": {"icon": "fa fa-id-badge", "url": "/transport/drivers/"},
+                    "Driver Assignments": {"icon": "fa fa-id-badge", "url": "/transport/driver_assistant_assignment/"},
                 },
             },
 

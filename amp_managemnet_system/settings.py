@@ -51,10 +51,13 @@ INSTALLED_APPS = [
     'employees',
     
 
+    
+    "rest_framework",
+    'rest_framework.authtoken',
+    'dj_rest_auth',
     'allauth',
-    "rest_framework"
-    # 'allauth.account',
-    # 'allauth.socialaccount',
+    'allauth.account',
+    'allauth.socialaccount',
 ]
 
 MIDDLEWARE = [
@@ -66,10 +69,16 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     
-    # 'allauth.account.middleware.AccountMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
     # 'ampPortal.middleware.LoginRequiredMiddleware',
     # 'ampPortal.middleware.SidebarMiddleware',
 ]
+
+# REST_FRAMEWORK = {
+#     'DEFAULT_AUTHENTICATION_CLASSES': (
+#         'rest_authtoken.auth.AuthTokenAuthentication',
+#     ),
+# }
 
 ROOT_URLCONF = "amp_managemnet_system.urls"
 

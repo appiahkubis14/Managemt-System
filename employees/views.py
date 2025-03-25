@@ -6,6 +6,13 @@ from utils import sidebar
 from django.contrib import messages
 # Admin can update an employee's details
 from django.http import JsonResponse
+from django.utils.timezone import now
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from .serializers import EmployeeSerializer
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 
 # Admin can view all employees
 @login_required
@@ -13,9 +20,11 @@ from django.http import JsonResponse
 def employee_list(request):
     employees = Employee.objects.all()
     sidebar_items = sidebar.Sidebar.sidebar_items
+    role_choices = CustomUser.ROLE_CHOICES
     context={
         "sidebar_items": sidebar_items,
-        "employees": employees
+        "employees": employees,
+        "role_choices": role_choices
     }
     return render(request, "employees/employee-list.html", context)
 
@@ -29,48 +38,67 @@ def department_employees(request):
 
 
 # Admin can add a new employee
-@login_required
-@admin_required
+
 def add_employee(request):
     if request.method == "POST":
-        user_id = request.POST.get("user_id")
+        # Create the user first
+        username = request.POST.get("username")
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+        selected_role = request.POST.get("role")  # Retrieve role from form
+
+        # Ensure role is valid
+        valid_roles = dict(CustomUser.ROLE_CHOICES)
+        if selected_role not in valid_roles:
+            messages.error(request, "Invalid role selected!")
+            return redirect("add_employee")
+
+        # Create the new user
+        user = CustomUser.objects.create_user(
+            username=username,
+            email=email,
+            password=password,
+            role=selected_role  # Assign role
+        )
+
+        # Now create the employee record
         employee_name = request.POST.get("employee_name")
         date_of_birth = request.POST.get("date_of_birth")
         date_of_join = request.POST.get("date_of_join")
         gender = request.POST.get("gender")
         ghana_card = request.POST.get("ghana_card")
         phone = request.POST.get("phone")
+        photo = request.FILES.get("profile_picture")
         department = request.POST.get("department")
         position = request.POST.get("position")
         hire_date = request.POST.get("hire_date")
         salary = request.POST.get("salary")
 
-        user = get_object_or_404(CustomUser, id=user_id)
-
         # Check if employee already exists
-        if Employee.objects.filter(user=user).exists():
+        if Employee.objects.filter(employee_name=employee_name, date_of_birth=date_of_birth).exists():
             messages.error(request, "Employee already exists!")
             return redirect("add_employee")
 
+        # Create and save the employee
         Employee.objects.create(
-            user=user,
             employee_name=employee_name,
             date_of_birth=date_of_birth,
             date_of_join=date_of_join,
             gender=gender,
             ghana_card=ghana_card,
             phone=phone,
+            photo=photo,
+            user=user,  # Link Employee to the newly created CustomUser
             department=department,
             position=position,
             hire_date=hire_date,
             salary=salary,
-            submitted_by=request.user
         )
-        messages.success(request, "Employee added successfully!")
+
+        messages.success(request, "Employee and user created successfully!")
         return redirect("employee_list")
 
-    return render(request, "employees/add_employee.html")
-
+   
 
 
 
@@ -82,13 +110,17 @@ def update_employee(request, employee_id):
     if request.method == "GET":
         return JsonResponse({
             "employee": {
-                "employee_id": employee.employee_id,
+                "id": employee.id,
                 "employee_name": employee.employee_name,
                 "department": employee.department,
-                "position": employee.position,
+                "date_of_birth": str(employee.date_of_birth),
+                "date_of_join": str(employee.date_of_join),
+                "photo": employee.photo.url if employee.photo else None,
                 "gender": employee.gender,
-                "phone": employee.phone,
                 "ghana_card": employee.ghana_card,
+                "phone": employee.phone,
+                "department": employee.department,
+                "position": employee.position,
                 "hire_date": str(employee.hire_date),
                 "salary": str(employee.salary),
             }
@@ -174,3 +206,12 @@ def import_employees(request):
             messages.error(request, f"Error processing file: {e}")
             
     return redirect('dashboard_employees')
+
+
+
+@csrf_exempt  # Remove if using CSRF tokens in JS
+@require_http_methods(["DELETE"])  # Only allow DELETE requests
+def employee_delete(request, id):
+    vehicle = get_object_or_404(Employee, id=id)
+    vehicle.delete()
+    return JsonResponse({"message": "Vehicle deleted successfully."}, status=200)

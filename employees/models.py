@@ -33,7 +33,13 @@ class CustomUser(AbstractUser):
 
 # Employee Model
 class Employee(models.Model):
-    employee_id = models.CharField(max_length=64, editable=False, unique=True, null=True)
+    
+    department_choices = (
+        ('transport', 'Transport'),
+        ('warehouse', 'Warehouse'),
+        ('inventory', 'Inventory'),
+    )
+    # employee_id = models.CharField(max_length=64, editable=False, unique=True, null=True)
     employee_name = models.CharField(max_length=255)
     date_of_birth = models.DateField(blank=True, null=True)
     date_of_join = models.DateField(blank=True, null=True)  
@@ -42,18 +48,18 @@ class Employee(models.Model):
     phone = models.CharField(max_length=128, unique=True)
     photo = models.ImageField(upload_to="employee_photos/", blank=True, null=True)  
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="employee_profile")
-    department = models.CharField(max_length=100)
+    department = models.CharField(max_length=100 , choices=department_choices)
     position = models.CharField(max_length=100)
     hire_date = models.DateField()
     salary = models.DecimalField(max_digits=10, decimal_places=2)
-    submitted_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name="submitted_employees")  
-    submitted_on = models.DateTimeField(auto_now_add=True)
+    # submitted_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name="submitted_employees")  
+    # submitted_on = models.DateTimeField(auto_now_add=True)
 
-    def save(self, *args, **kwargs):
-        if not self.employee_id:
-            generator = IDGenerator()
-            self.employee_id = generator.generate_unique_id("EMP")
-        super(Employee, self).save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     if not self.employee_id:
+    #         generator = IDGenerator()
+    #         self.employee_id = generator.generate_unique_id("EMP")
+    #     super(Employee, self).save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.user.get_full_name()} - {self.position}"

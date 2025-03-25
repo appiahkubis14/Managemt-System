@@ -13,6 +13,8 @@ urlpatterns = [
     path("vehicles/<int:id>/", vehicle_detail, name='vehicle_detail'),  # Retrieve vehicle
     path("vehicles/<int:id>/update/", vehicle_update, name='vehicle_update'),  # Update vehicle
     path("vehicles/<int:id>/delete/", vehicle_delete, name='vehicle_delete'),  # Delete vehicle
+    
+    path("driver_assistant_assignment/", driver_assistant_assignment, name='driver_assistant_assignment'),  # Render driver template
 ]
 
 
