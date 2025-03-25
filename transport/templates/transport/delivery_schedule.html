@@ -1,0 +1,174 @@
+{% extends 'transport/transport_base.html' %}
+{% load i18n static %}
+{% load custom_filters %}
+
+{% block add_new %}
+<!-- Add Dispatch Request Modal -->
+<div class="modal fade" id="addVehicleModal" tabindex="-1" aria-labelledby="addVehicleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addDispatchModalLabel">Add New Dispatch Request</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" enctype="multipart/form-data" id="addDispatchForm" action="/transport/dispatch/create/">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Vehicle</label>
+                            <select name="vehicle" class="form-control" required>
+                                {% for vehicle in vehicles %}
+                                    <option value="{{ vehicle.id }}">{{ vehicle.license_plate }} - {{ vehicle.make }} {{ vehicle.model }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Driver</label>
+                            <select name="driver" class="form-control" required>
+                                {% for driver in drivers %}
+                                    <option value="{{ driver.id }}">{{ driver.full_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Assistant (Optional)</label>
+                            <select name="assistant" class="form-control">
+                                <option value="">None</option>
+                                {% for assistant in assistants %}
+                                    <option value="{{ assistant.id }}">{{ assistant.full_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Destination</label>
+                            <input type="text" name="destination" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            <select name="status" class="form-control">
+                                <option value="pending">Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="dispatched">Dispatched</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Trip Log (Optional)</label>
+                            <textarea name="trip_log" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="text-end mt-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Dispatch
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+{% endblock %}
+
+{% block content %}
+<div class="card-body">
+    <div class="">
+        <table id="dispatchTable" class="table table-striped table-bordered datatable">
+            <thead class="table-dark">
+                <tr>
+                    <th>Vehicle</th>
+                    <th>License Plate</th>
+                    <th>Driver</th>
+                    <th>Driver Assistant</th>
+                    <th>Destination</th>
+                    <th>Status</th>
+                    <th>Trip Log</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dispatch in delivery_schedule %}
+                <tr id="dispatchRow{{ dispatch.id }}">
+                    <td>{{ dispatch.vehicle.vehicle_type }}</td>
+                    <td>{{ dispatch.vehicle.license_plate }}</td>
+                    <td>{{ dispatch.driver.name }}</td>
+                    <td>{{ dispatch.assistant.name|default:"N/A" }}</td>
+                    <td>{{ dispatch.destination }}</td>
+                    <td>
+                        {% if dispatch.status == 'pending' %}
+                            <span class="badge bg-secondary">Pending</span>
+                        {% elif dispatch.status == 'approved' %}
+                            <span class="badge bg-primary">Approved</span>
+                        {% elif dispatch.status == 'dispatched' %}
+                            <span class="badge bg-warning">Dispatched</span>
+                        {% elif dispatch.status == 'completed' %}
+                            <span class="badge bg-success">Completed</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ dispatch.trip_log|default:"No log available" }}</td>
+                    <td>
+                        <div class="dropdown">
+                            <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item edit-dispatch" href="#" data-bs-toggle="modal" data-bs-target="#editModal{{ dispatch.id }}" data-id="{{ dispatch.id }}">
+                                        Edit
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item text-danger delete-dispatch" href="#" onclick="deleteDispatch({{ dispatch.id }})">
+                                        Delete
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Edit Dispatch Modal -->
+                <div class="modal fade" id="editModal{{ dispatch.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Edit Dispatch Request</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="editDispatchForm{{ dispatch.id }}" action="{% url 'dispatch_update' dispatch.id %}" method="POST">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label class="form-label">Status</label>
+                                        <select name="status" class="form-control">
+                                            <option value="pending" {% if dispatch.status == 'pending' %}selected{% endif %}>Pending</option>
+                                            <option value="approved" {% if dispatch.status == 'approved' %}selected{% endif %}>Approved</option>
+                                            <option value="dispatched" {% if dispatch.status == 'dispatched' %}selected{% endif %}>Dispatched</option>
+                                            <option value="completed" {% if dispatch.status == 'completed' %}selected{% endif %}>Completed</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Trip Log</label>
+                                        <textarea class="form-control" name="trip_log">{{ dispatch.trip_log }}</textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center text-muted">No dispatch requests found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
