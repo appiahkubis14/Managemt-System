@@ -4,74 +4,82 @@
 
 {% block add_new %}
 <!-- Add Dispatch Request Modal -->
-<div class="modal fade" id="addVehicleModal" tabindex="-1" aria-labelledby="addVehicleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addDispatchModalLabel">Add New Dispatch Request</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form method="POST" enctype="multipart/form-data" id="addDispatchForm" action="/transport/dispatch/create/">
-                    {% csrf_token %}
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label class="form-label">Vehicle</label>
-                            <select name="vehicle" class="form-control" required>
-                                {% for vehicle in vehicles %}
-                                    <option value="{{ vehicle.id }}">{{ vehicle.license_plate }} - {{ vehicle.make }} {{ vehicle.model }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Driver</label>
-                            <select name="driver" class="form-control" required>
-                                {% for driver in drivers %}
-                                    <option value="{{ driver.id }}">{{ driver.full_name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Assistant (Optional)</label>
-                            <select name="assistant" class="form-control">
-                                <option value="">None</option>
-                                {% for assistant in assistants %}
-                                    <option value="{{ assistant.id }}">{{ assistant.full_name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Destination</label>
-                            <input type="text" name="destination" class="form-control" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Status</label>
-                            <select name="status" class="form-control">
-                                <option value="pending">Pending</option>
-                                <option value="approved">Approved</option>
-                                <option value="dispatched">Dispatched</option>
-                                <option value="completed">Completed</option>
-                            </select>
-                        </div>
-                        <div class="col-md-12">
-                            <label class="form-label">Trip Log (Optional)</label>
-                            <textarea name="trip_log" class="form-control" rows="3"></textarea>
-                        </div>
+        <div class="modal fade" id="addVehicleModal" tabindex="-1" aria-labelledby="addVehicleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addDispatchModalLabel">Add New Dispatch Request</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
-                    <div class="text-end mt-3">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> Save Dispatch
-                        </button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            <i class="fas fa-times"></i> Cancel
-                        </button>
+                    
+                    <div class="modal-body">
+                        <form method="POST" enctype="multipart/form-data" id="addDispatchForm" action="/transport/dispatch/create/">
+                            {% csrf_token %}
+                            {% for dispatch in delivery_schedule %}
+                            <div class="row">
+                                
+                                <div class="col-md-6">
+                                    <label class="form-label">Vehicle</label>
+                                    <select name="vehicle" class="form-control" required>
+                                        <option value="" disabled selected>Select Vehicle</option>
+                                        {% for vehicle in vehicles %}
+                                            <option value="{{ vehicle.id }}">{{ vehicle.vehicle_type }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Driver</label>
+                                    <select name="driver" class="form-control" required>
+                                        <option value="" disabled selected>Select Driver</option>
+                                        {% for driver in drivers %}
+                                            <option value="{{ driver.id }}">{{ driver.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Driver Assistant</label>
+                                    <select name="assistant" class="form-control">
+                                        <option value="" disabled selected>Select Assistant</option>
+                                        {% for assistant in assistants %}
+                                            <option value="{{ assistant.id }}">{{ assistant.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Destination</label>
+                                    <input type="text" name="destination" class="form-control" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Status</label>
+                                    <select name="status" class="form-control">
+                                        <option value="pending">Pending</option>
+                                        <option value="approved">Approved</option>
+                                        <option value="dispatched">Dispatched</option>
+                                        <option value="completed">Completed</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label">Trip Log (Optional)</label>
+                                    <textarea name="trip_log" class="form-control" rows="3"></textarea>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            <div class="text-end mt-3">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Save Dispatch
+                                </button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                </form>
+                    
+                </div>
             </div>
         </div>
     </div>
-</div>
-</div>
 
 {% endblock %}
 
@@ -123,7 +131,7 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item text-danger delete-dispatch" href="#" onclick="deleteDispatch({{ dispatch.id }})">
+                                    <a class="dropdown-item text-danger delete-dispatch" href="#" onclick="">
                                         Delete
                                     </a>
                                 </li>
@@ -141,7 +149,7 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
                             <div class="modal-body">
-                                <form id="editDispatchForm{{ dispatch.id }}" action="{% url 'dispatch_update' dispatch.id %}" method="POST">
+                                <form id="editDispatchForm{{ dispatch.id }}" action="" method="POST">
                                     {% csrf_token %}
                                     <div class="mb-3">
                                         <label class="form-label">Status</label>

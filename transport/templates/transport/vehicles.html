@@ -98,8 +98,8 @@
                                 <th>Year</th>
                                 <th>Status</th>
                                 <th>Registered Date</th>
-                                <th>Driver</th>
-                                <th>Assistant</th>
+                                <!-- <th>Driver</th>
+                                <th>Assistant</th> -->
                                 <th>Image</th>
                                 <th>Actions</th>
                             </tr>
@@ -125,7 +125,7 @@
                                 </td>
                                 <td>{{ vehicle.date_of_registration|date:"Y-m-d" }}</td>
                                 
-                                {# Fetch assignment linked to this vehicle #}
+                                <!-- {# Fetch assignment linked to this vehicle #}
                                 {% with assignments=assignment|dictsort:"id"|first %}
                                 <td>
                                     {% if assignments and assignments.id == vehicle.id %}
@@ -141,7 +141,7 @@
                                         <span class="text-muted">No Assistant Assigned</span>
                                     {% endif %}
                                 </td>
-                                {% endwith %}
+                                {% endwith %} -->
                                 
                                 <td>
                                     {% if vehicle.vehicle_image %}

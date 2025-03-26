@@ -12,10 +12,16 @@ from django.views.decorators.csrf import csrf_exempt
 from utils import sidebar
 from .models import Vehicle, DriverVehicleAssignment,\
 VehicleAssignmentHistory, Driver, DriverAssistant\
-, DispatchRequest
+, DispatchRequest,MaintenanceRequest
 
 from .serializers import VehicleSerializer
 from django.views.decorators.http import require_http_methods
+from django.shortcuts import render
+from django.db.models import Q
+# from .models import DispatchRequest, DriverVehicleAssignment, Vehicle, Driver, DriverAssistant
+from django.shortcuts import render, get_object_or_404
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 # 🚗 Transport Dashboard View
@@ -146,13 +152,71 @@ def import_vehicles(request):
 
 
 
-#Assignment of drivers to vehicles
+
+def maintenance_request(request):
+    """
+    View to handle maintenance requests and update vehicle status automatically.
+    """
+    maintenance_requests = MaintenanceRequest.objects.all()
+    vehicles = Vehicle.objects.all()
+    context = {
+        "sidebar_items": sidebar.Sidebar.sidebar_items,
+        "maintenance_requests": maintenance_requests,
+        "vehicles": vehicles,
+    }
+
+    return render(request, "transport/maintenance-request.html", context)
+
+
+
+
+@receiver(post_save, sender=MaintenanceRequest)
+def update_vehicle_status(sender, instance, **kwargs):
+    """
+    Signal to update the vehicle status based on the maintenance request status.
+    """
+    vehicle = instance.vehicle
+
+    if instance.status == "approved":
+        vehicle.status = "maintenance"  # Vehicle goes under maintenance
+    elif instance.status == "completed":
+        vehicle.status = "available"  # Vehicle is back in service
+    else:
+        vehicle.status = "In Use"
+
+    vehicle.save()
+
+
+def update_driver_vehicle_assignment():
+    """
+    Auto-populates DriverVehicleAssignment from DispatchRequest
+    and ensures no vehicles in maintenance are assigned.
+    """
+    # from .models import DispatchRequest  # Import here to avoid circular imports
+
+    dispatch_requests = DispatchRequest.objects.filter(status="approved")
+
+    for dispatch in dispatch_requests:
+        # Ensure vehicle is not under maintenance before assigning
+        if dispatch.vehicle.status != "maintenance":
+            assignment, created = DriverVehicleAssignment.objects.get_or_create(driver=dispatch.driver)
+
+            assignment.assigned_vehicle = dispatch.vehicle
+            assignment.assigned_assistant = dispatch.assistant
+            assignment.save()
+
+
 def driver_assistant_assignment(request):
+    """
+    View to handle driver-vehicle assignments, ensuring maintenance vehicles are not assigned.
+    """
+    update_driver_vehicle_assignment()
+
     assignments = DriverVehicleAssignment.objects.select_related("driver", "assigned_vehicle", "assigned_assistant").all()
     drivers = Driver.objects.all()
-    vehicles = Vehicle.objects.all()
+    vehicles = Vehicle.objects.filter(status="available")  # Exclude vehicles under maintenance
     assistants = DriverAssistant.objects.all()
-    print(assignments.values())
+
     context = {
         "path": request.path or "",
         "sidebar_items": sidebar.Sidebar.sidebar_items,
@@ -161,16 +225,30 @@ def driver_assistant_assignment(request):
         "vehicles": vehicles,
         "assistants": assistants
     }
+
     return render(request, "transport/driver_assistant_assignment.html", context)
 
-
 def delivery_schedule(request):
+    """
+    View to display the delivery schedule
+    """
+    # Ensure assignments are up-to-date
+    update_driver_vehicle_assignment()
+
     delivery_schedule = DispatchRequest.objects.all()
     vehicles = Vehicle.objects.all()
+    drivers = Driver.objects.all()
+    assistants = DriverAssistant.objects.all()
+    assignments = DriverVehicleAssignment.objects.select_related("driver", "assigned_vehicle", "assigned_assistant").all()
+
     context = {
         "path": request.path or "",
         "sidebar_items": sidebar.Sidebar.sidebar_items,
         "delivery_schedule": delivery_schedule,
+        "drivers": drivers,
         "vehicles": vehicles,
+        "assistants": assistants
     }
     return render(request, "transport/delivery_schedule.html", context)
+
+

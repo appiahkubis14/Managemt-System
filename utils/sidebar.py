@@ -46,6 +46,7 @@ class Sidebar:
                     "Delivery Schedules": {"icon": "fa fa-calendar", "url": "/transport/delivery_schedule/"},
                     "Live Tracking": {"icon": "fa fa-map-marker-alt", "url": "/transport/tracking/"},
                     "Driver Assignments": {"icon": "fa fa-id-badge", "url": "/transport/driver_assistant_assignment/"},
+                    "Maintenance Request": {"icon": "fa fa-id-badge", "url": "/transport/maintenance-request/"},
                 },
             },
 

@@ -16,6 +16,7 @@ urlpatterns = [
     
     path("driver_assistant_assignment/", driver_assistant_assignment, name='driver_assistant_assignment'),  # Render driver template
     path("delivery_schedule/", delivery_schedule, name='delivery_schedule'),  # Render driver template
+    path("maintenance-request/" , maintenance_request,name="maintenance_request")
 ]
 
 
