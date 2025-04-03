@@ -366,6 +366,23 @@
 <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
 <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.colVis.min.js"></script>
 
+<div class="modal fade" id="descriptionModal" tabindex="-1" aria-labelledby="descriptionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="descriptionModalLabel">Full Description</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="modal-description-text"></p> <!-- Full description will go here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <script>
 
@@ -392,7 +409,22 @@ $(document).ready(function () {
             { "data": "id", "className": "text-center align-middle" },
             { "data": "item", "render": function (data) { return data ? data.toUpperCase() : "N/A"; }, "className": "text-center align-middle" },
             { "data": "category", "render": function (data) { return data.toUpperCase(); }, "className": "text-center align-middle" },
-            { "data": "description", "render": function (data) { return data ? data.toUpperCase() : "N/A"; }, "className": "text-center align-middle" },
+            {
+                "data": "description", 
+                "render": function(data) {
+                    // Convert the description to uppercase
+                    var uppercaseDescription = data ? data.toUpperCase() : "";
+
+                    // Check if the description exists and is longer than 20 characters
+                    if (data && data.length > 20) {
+                        return uppercaseDescription.substring(0, 20) + "... <a href='#' class='show-more' data-description='" + data + "'>more</a>";
+                    }
+
+                    // If the description is shorter than or equal to 20 characters, just show the whole uppercase description
+                    return uppercaseDescription;
+                }
+            },
+            // { "data": "description", "render": function (data) { return data ? data.toUpperCase() : "N/A"; }, "className": "text-center align-middle" },
             { "data": "quantity", "className": "text-center align-middle" },
             { "data": "transaction_type", "render": function (data) { return data.toUpperCase(); }, "className": "text-center align-middle" },
             { "data": "employee_name", "render": function (data) { return data ? data.toUpperCase() : "N/A"; }, "className": "text-center align-middle" },
@@ -412,6 +444,12 @@ $(document).ready(function () {
         ]
     });
 
+    $(document).on('click', '.show-more', function(e) {
+        e.preventDefault();
+        var fullDescription = $(this).data('description');  // Get the full description
+        $('#modal-description-text').text(fullDescription);  // Set the description in the modal
+        $('#descriptionModal').modal('show');  // Show the modal
+    });
 
 
     // Open Create Modal

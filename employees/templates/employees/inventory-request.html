@@ -380,6 +380,8 @@ $(document).ready(function () {
         autoWidth: false,
         processing: true,
         serverSide: false,
+        pageLength: 20, // Default number of items per page
+        lengthMenu: [ [5, 10, 25, 50, -1], [5, 10, 25, 50, "All"] ],
         "ajax": {
             "url": "/inventory/all-request-inventory/",
             "type": "GET",
@@ -405,7 +407,7 @@ $(document).ready(function () {
                             <button class="btn btn-sm btn-primary edit-inventory" data-id="${data}">View</button>
                             <button class="btn btn-sm btn-danger delete-inventory" id=delete-btn data-id="${data}">Delete</button>
                         </div>`;
-                },/inventory/add-request-inventory/
+                },
               
             }
         ]

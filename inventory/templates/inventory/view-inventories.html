@@ -10,6 +10,23 @@
 <div class="row">
     <div class="col-12">
         <div class="page-title-box d-flex align-items-center justify-content-between">
+            
+            <div class="mb-3">
+                <!-- Export Button -->
+                <!-- <a href="{% url 'export_vehicles' %}" class="btn btn-primary me-2">
+                    <i class="fas fa-file-export"></i> Export
+                </a> -->
+            
+                <!-- Import Button with Modal -->
+                <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#importVehicleModal">
+                    <i class="fas fa-file-import"></i> Import Stocks
+                </button>
+            
+                <!-- Add Vehicle Button -->
+                <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#addInventoryModal">
+                    <i class="fas fa-plus-circle"></i> Add Stock
+                </button>
+            </div>
             <div>
                 <h4 class="fs-16 fw-semibold mb-1 mb-md-2">Inventory Management</h4>
                 <p class="text-muted mb-0">List of all available inventories.</p>
@@ -36,23 +53,9 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h4 class="card-title">Inventory Details</h4>
-                <div class="mb-3">
-                    <!-- Export Button -->
-                    <!-- <a href="{% url 'export_vehicles' %}" class="btn btn-primary me-2">
-                        <i class="fas fa-file-export"></i> Export
-                    </a> -->
+                <!-- <h4 class="card-title">Inventory Details</h4> -->
+                 <div></div>
                 
-                    <!-- Import Button with Modal -->
-                    <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#importVehicleModal">
-                        <i class="fas fa-file-import"></i> Import Stocks
-                    </button>
-                
-                    <!-- Add Vehicle Button -->
-                    <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#addInventoryModal">
-                        <i class="fas fa-plus-circle"></i> Add Stock
-                    </button>
-                </div>
                 
                 <!-- Import Vehicle Modal -->
                 <div class="modal fade" id="importVehicleModal" tabindex="-1" aria-labelledby="importVehicleModalLabel" aria-hidden="true">
@@ -73,7 +76,7 @@
                                         <button type="submit" class="btn btn-success">
                                             <i class="fas fa-upload"></i> Upload
                                         </button>
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                        /inventory/add-request-inventory/                               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                                             <i class="fas fa-times"></i> Cancel
                                         </button>
                                     </div>
@@ -207,8 +210,11 @@
                                     <label class="form-label">Unit Price</label>
                                     <input type="number" class="form-control" name="unit_price">
                                 </div>
+                                <div style="display: flex;align-items: center;justify-content: center;">
+                                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                                </div>
 
-                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                                
                             </form>
                         </div>
                     </div>
@@ -287,6 +293,8 @@
         autoWidth: false,
         processing: true,
         serverSide: false, // Change to true if using server-side processing
+        pageLength: 15, // Default number of items per page
+        lengthMenu: [ [5, 10, 25, 50, -1], [5, 10, 25, 50, "All"] ],
         ajax: {
             "url": "/inventory/inventory-items/",
             "type": "GET"
@@ -318,7 +326,7 @@
                     "data": "id",
                     "render": function(data, type, row) {
                         return `
-                            <button class="btn btn-sm btn-primary edit-btn" data-id="${data}" data-bs-target="#editModal${data}">Edit</button>
+                            <button class="btn btn-sm btn-primary edit-btn" data-id="${data}" >Edit</button>
                             <button class="btn btn-sm btn-danger delete-btn" data-id="${data}">Delete</button>
                         `;
                     }
@@ -396,95 +404,130 @@
   
     // Event listener for Edit button
     $(document).on("click", ".edit-btn", function () {
-        let itemId = $(this).data("id"); // Get the inventory item ID
+    let itemId = $(this).data("id"); // Get the inventory item ID
 
-        console.log("Fetching item ID:", itemId); // Debugging log
+    console.log("Fetching item ID:", itemId); // Debugging log
 
-        $.ajax({
-            url: `/inventory/inventory-items/${itemId}/`, // Update this URL as per your API endpoint
-            type: "GET",
-            success: function (response) {
-                if (response.success) {
-                    // Populate form fields
-                    $("#editInventoryForm input[name='name']").val(response.name);
-                    $("#editInventoryForm input[name='category']").val(response.category);
-                    $("#editInventoryForm textarea[name='description']").val(response.description);
-                    $("#editInventoryForm input[name='quantity']").val(response.quantity);
-                    $("#editInventoryForm input[name='reorder_level']").val(response.reorder_level);
+    $.ajax({
+        url: `/inventory/inventory-item/${itemId}/`, // Update this URL as per your API endpoint
+        type: "GET",
+        success: function (response) {
+            if (response.success) {
+                // Populate form fields
+                $("#editInventoryForm input[name='name']").val(response.name);
+                $("#editInventoryForm input[name='category']").val(response.category);
+                $("#editInventoryForm textarea[name='description']").val(response.description);
+                $("#editInventoryForm input[name='quantity']").val(response.quantity);
+                $("#editInventoryForm input[name='reorder_level']").val(response.reorder_level);
 
-                    // Show the modal
-                    $("#editModal").modal("show");
-                } else {
-                    alert("Failed to fetch inventory details!");
-                }
-            },
-            error: function (xhr) {
-                alert(`Error fetching details: ${xhr.responseText}`);
-            },
-        });
-    });
+                // Store the item ID in the form (or modal) for later use
+                $("#editInventoryForm").data("id", itemId); // Store itemId on the form
 
-
-    // ✅ Update Vehicle (Submit Edited Data)
-    $(document).on("submit", "#editInventoryForm", function (e) {
-          e.preventDefault();
-          let itemId = $(this).data("id"); 
-        formData = new FormData(this)
-
-          Swal.fire({
-            title: "Do you want to save the changes?",
-            showDenyButton: true,
-            showCancelButton: true,
-            confirmButtonText: "Save",
-            denyButtonText: `Don't save`,
-          }).then((result) => {
-            /* Read more about isConfirmed, isDenied below */
-            if (result.isConfirmed) {
-              $.ajax({
-                url: `/inventory/update/${itemId}/`,
-                type: "POST", // Django uses POST with `_method=PUT`
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function (response) {
-                  if (response.success) {
-                    Swal.fire("Saved!", "", "success");
-                    $("#editModal").modal("hide");
-                    table.ajax.reload(); // Reload DataTable if applicable
-                  } else {
-                    showMessage(
-                      "warning",
-                      response.message || "Update failed!"
-                    );
-                  }
-                },
-              });
-              Swal.fire("Saved!", "", "success");
-            } else if (result.isDenied) {
-              Swal.fire("Changes are not saved", "", "info");
+                // Show the modal
+                $("#editModal").modal("show");
+            } else {
+                alert("Failed to fetch inventory details!");
             }
-          });
-        });
+        },
+        error: function (xhr) {
+            alert(`Error fetching details: ${xhr.responseText}`);
+        },
+    });
+});
 
 
 
-    $('#inventoryTable tbody').on('click', '.delete-btn', function() {
-        let itemId = $(this).data('id');
-        if (confirm("Are you sure you want to delete this item?")) {
-            $.ajax({
-                url: `/inventory/delete/${itemId}/`,
-                type: "DELETE",
-                success: function(response) {
-                    alert(response.message);
-                    table.ajax.reload();
-                },
-                error: function(xhr) {
-                    alert("Error deleting item");
-                }
-            });
+    /// Get the CSRF token from the cookie (make sure you have this helper function)
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+$(document).on("submit", "#editInventoryForm", function (e) {
+    e.preventDefault(); // Prevent default form submission
+
+    // Retrieve the itemId from the form's data attribute
+    let itemId = $(this).data("id"); // Get the item ID that was stored earlier
+    let formData = new FormData(this); // Serialize form data
+
+    $.ajax({
+        url: `/inventory/update/${itemId}/`, // Make sure this URL matches your view
+        type: "POST",
+        data: formData,
+        processData: false,
+        contentType: false,
+        headers: {
+            "X-CSRFToken": getCookie("csrftoken") // CSRF token header
+        },
+        success: function (response) {
+            if (response.message) {
+                Swal.fire("Saved!", response.message, "success");
+                $("#editModal").modal("hide"); // Close modal after saving
+                table.ajax.reload(); // Reload the table if needed
+            } else {
+                Swal.fire("Warning", response.error || "Update failed!", "warning");
+            }
+        },
+        error: function (xhr) {
+            Swal.fire("Error", "An error occurred during the update.", "error");
         }
     });
 });
+
+
+
+$('#inventoryTable tbody').on('click', '.delete-btn', function() {
+    let itemId = $(this).data('id');
+    
+    // SweetAlert confirmation for delete
+    Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, delete it!",
+        cancelButtonText: "No, keep it",
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Perform the delete action using AJAX
+                $.ajax({
+                    url: `/inventory/delete/${itemId}/`,
+                    type: "DELETE",
+                    success: function(response) {
+                        Swal.fire(
+                            "Deleted!",
+                            response.message, // Assuming response contains a message after deletion
+                            "success"
+                        );
+                        table.ajax.reload(); // Reload the table to reflect the deletion
+                    },
+                    error: function(xhr) {
+                        Swal.fire(
+                            "Error",
+                            "There was an error deleting the item.",
+                            "error"
+                        );
+                    }
+                });
+            } else {
+                // If the user cancels
+                Swal.fire("Cancelled", "Your item is safe.", "info");
+            }
+        });
+    });
+
+});
+
+
 
 </script>
 

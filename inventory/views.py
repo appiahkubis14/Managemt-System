@@ -424,43 +424,66 @@ def create_inventory(request):
 
 
 
-def get_inventory_item(request, item_id):
+
+def get_inventory_by_id(request, item_id):
     """Fetch item details for AJAX request."""
-    item = get_object_or_404(UniqueInventoryItem, id=item_id)
-    return JsonResponse({
-        "success": True,
-        "name": item.name,
-        "category": item.category,
-        "description": item.description,
-        "quantity": item.quantity,
-        "reorder_level": item.reorder_level,
-        "unit_price": str(item.unit_price)  # Convert DecimalField to string
-    })
+    try:
+        # Fetch item details or return 404 if not found
+        item = get_object_or_404(UniqueInventoryItem, id=item_id)
+
+        # Return the item details in JSON format
+        return JsonResponse({
+            "success": True,
+            "name": item.name,
+            "category": item.category,
+            "description": item.description,
+            "quantity": item.quantity,
+            "reorder_level": item.reorder_level,
+            "unit_price": str(item.unit_price),  # Convert DecimalField to string
+        })
+
+    except UniqueInventoryItem.DoesNotExist:
+        # If the item does not exist, return an error response
+        return JsonResponse({"success": False, "error": "Item not found"}, status=404)
+
+    except Exception as e:
+        # Catch any other exceptions and return an error message
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
 
 
-
-def update_inventory(request, id):
+def update_inventory(request, item_id):
     """Update an existing inventory item."""
-    item = get_object_or_404(InventoryItem, id=id)
+    item = get_object_or_404(InventoryItem, id=item_id)
     
     if request.method == 'POST':
         form = InventoryItemForm(request.POST, instance=item)
         if form.is_valid():
             form.save()
             return JsonResponse({'message': 'Inventory updated successfully'}, status=200)
+        else:
+            # Return form validation errors if the form is invalid
+            return JsonResponse({'error': form.errors}, status=400)
     
-    return JsonResponse({'error': 'Invalid request'}, status=400)
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
+from .models import InventoryItem
 
 @csrf_exempt
-def delete_inventory(request, id):
+def delete_inventory(request, item_id):
     """Delete an inventory item."""
-    item = get_object_or_404(InventoryItem, id=id)
     
-    if request.method == 'POST':
-        item.delete()
+    if request.method == 'DELETE':
+        # Fetch the item to delete
+        item = get_object_or_404(UniqueInventoryItem, id=item_id)
+        item.delete()  # Delete the item
         return JsonResponse({'message': 'Inventory deleted successfully'}, status=200)
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
+
 
 
 

@@ -1,9 +1,9 @@
 from django import forms
-from .models import InventoryItem
+from .models import InventoryItem,UniqueInventoryItem
 
 class InventoryItemForm(forms.ModelForm):
     class Meta:
-        model = InventoryItem
+        model = UniqueInventoryItem
         fields = ['name', 'category', 'quantity', 'description', 'reorder_level', 'department']
 
 

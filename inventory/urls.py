@@ -5,11 +5,11 @@ urlpatterns = [
     # path("dashboard/", inventory_dashboard_view, name="inventory_dashboard"),
     path("view-inventories/", inventory_view, name="view_inventories"),
     path("requested-inventory/", requested_inventory , name="inventory-request") ,
+    path("inventory-item/<int:item_id>/",get_inventory_by_id,name='requested_inventory'),
     path("all-request-inventory/", get_inventory_requests , name="request-inventory") ,
     path('create/', create_inventory, name='create_inventory'),
-    path('update/<int:id>/', update_inventory, name='update_inventory'),
-    path('delete/<int:id>/', delete_inventory, name='delete_inventory'),
-
+    path('update/<int:item_id>/', update_inventory, name='update_inventory'),  # Use <int:item_id> if the ID is an integer
+    path('delete/<int:item_id>/', delete_inventory, name='delete_inventory'),
     path("request-inventory/update/<str:id>/", update_transaction_type,name='update_inventory_request'),
     path("inventory-request/<int:id>/<str:action>/", process_request, name="process_request"),
 
