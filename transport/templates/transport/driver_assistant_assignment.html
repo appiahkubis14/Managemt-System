@@ -5,198 +5,804 @@
 
 
 {% block add_new %}
-<!-- Add Vehicle Modal -->
-        <div class="modal fade" id="addVehicleModal" tabindex="-1" aria-labelledby="addVehicleModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="addVehicleModalLabel">Add New Vehicle</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form method="POST" enctype="multipart/form-data" id="addVehicleForm" action="/transport/vehicles/create/">
-                                {% csrf_token %}
-                                
-                                <div class="row">
-                                    <!-- Driver Dropdown -->
-                                    <div class="col-md-6">
-                                        <label class="form-label">Driver</label>
-                                        <select name="driver" class="form-control" required>
-                                            <option value="" disabled selected>Select Driver</option>
-                                            {% for driver in drivers %}
-                                                <option value="{{ driver.id }}">{{ driver.name }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <!-- <h4 class="card-title">Vehicle Assignment and Maintenance Request</h4> -->
+                 <div></div>
+                <div class="mb-2" style="display: flex;gap: 3px;">
+                    <!-- Export Button -->
+                    <!-- <a href="{% url 'export_vehicles' %}" class="btn btn-primary me-2">
+                        <i class="fas fa-file-export"></i> Export
+                    </a> -->
 
-                                    <!-- Assistant Dropdown -->
-                                    <div class="col-md-6">
-                                        <label class="form-label">Driver Assistant</label>
-                                        <select name="assistant" class="form-control">
-                                            <option value="" disabled selected>Select Assistant</option>
-                                            {% for assistant in assistants %}
-                                                <option value="{{ assistant.id }}">{{ assistant.name }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
+                    <!-- Import Button with Modal -->
+                    <!-- <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#importVehicleModal">
+                        <i class="fas fa-file-import"></i> Import
+                    </button> -->
+                    
+                    <!-- <a href=" " class="btn btn-secondary me-2">
+                        <i class="fas fa-tools"></i> Request Maintenance
+                    </a> -->
 
-                                    <!-- Vehicle Dropdown -->
-                                    <div class="col-md-6">
-                                        <label class="form-label">Vehicle</label>
-                                        <select name="vehicle" class="form-control" required>
-                                            <option value="" disabled selected>Select Vehicle</option>
-                                            {% for vehicle in vehicles %}
-                                                <option value="{{ vehicle.id }}">{{ vehicle.vehicle_type }}</option>
-                                            {% endfor %}
-                                        </select>
+                    <button class="btn btn-pink" data-bs-toggle="modal" data-bs-target="#addRequestModal">
+                        <i class="fas fa-plus-circle"></i> Request Maintenance
+                    </button>
+                    
+                    <!-- Add Vehicle Button -->
+                    <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#addVehicleModal">
+                        <i class="fas fa-plus-circle"></i> Add Assignmnet
+                    </button>
+                    <button class="btn btn-info btn-sm edit-btn edit-vehicle" data-bs-toggle="modal" data-bs-target="#clientRequestModal{{ assignment.assigned_vehicle.id }}" data-id="{{ assignment.assigned_vehicle.id}}">ASSIGN TASK TO VEHICLE</button>
+                </div>
+                
+                <!-- Import Vehicle Modal -->
+                <div class="modal fade" id="importVehicleModal" tabindex="-1" aria-labelledby="importVehicleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Import</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form action="{% url 'import_vehicles' %}" method="POST" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label for="csvFile" class="form-label">Upload CSV File</label>
+                                        <input type="file" name="csv_file" class="form-control" id="csvFile" required>
                                     </div>
-                                </div>
-                                
-                                <div class="text-end mt-3">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-save"></i> Save
-                                    </button>
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                        <i class="fas fa-times"></i> Cancel
-                                    </button>
-                                </div>
-                            </form>
+                                    <div class="text-end">
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-upload"></i> Upload
+                                        </button>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                            <i class="fas fa-times"></i> Cancel
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            </div>
+                <div class="modal fade" id="addRequestModal" tabindex="-1" aria-labelledby="addMaintenanceModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addMaintenanceModalLabel">Add New Maintenance Request</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                
+                            <div class="modal-body">
+                                <form method="POST" enctype="multipart/form-data" id="addMaintenanceForm">
+
+                                    {% csrf_token %}
+                                    
+                                    <div class="row">
+                                        <!-- Vehicle Selection -->
+                                        <div class="col-md-6">
+                                            <label class="form-label">Vehicle</label>
+                                            <select name="vehicle" class="form-control" required>
+                                                <option value="" disabled selected>Select Vehicle</option>
+                                                {% for vehicle in vehicles %}
+                                                    <option value="{{ vehicle.id }}">{{ vehicle.vehicle_type }} - {{ vehicle.license_plate }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        
+                
+                                        <!-- Requested By -->
+                                        <div class="col-md-6">
+                                            <label class="form-label">Requested By</label>
+                                            <input type="text" name="requested_by" class="form-control" required>
+                                        </div>
+                
+                                        <!-- Category -->
+                                        <div class="col-md-6">
+                                            <label class="form-label">Category</label>
+                                            <select name="category" class="form-control" required>
+                                                <option value="general">General</option>
+                                                <option value="accident">Accident</option>
+                                            </select>
+                                        </div>
+                
+                                        <!-- Status -->
+                                        <div class="col-md-6">
+                                            <label class="form-label">Status</label>
+                                            <select name="status" class="form-control">
+                                                <option value="pending">Pending</option>
+                                                <option value="approved">Approved</option>
+                                                <option value="completed">Completed</option>
+                                            </select>
+                                        </div>
+                
+                                        <!-- Description -->
+                                        <div class="col-md-12">
+                                            <label class="form-label">Description</label>
+                                            <textarea name="description" class="form-control" rows="3" required></textarea>
+                                        </div>
+                                    </div>
+                
+                                    <div class="text-end mt-3">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save"></i> Save Request
+                                        </button>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                            <i class="fas fa-times"></i> Cancel
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                
+                        </div>
+                    </div>
+                </div>
+                            
+            <!-- Add Vehicle Modal -->
+                    <div class="modal fade" id="addVehicleModal" tabindex="-1" aria-labelledby="addVehicleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="addVehicleModalLabel">Add New Vehicle Assignment</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form method="POST" enctype="multipart/form-data" id="addVehicleForm" action="/transport/assignments/create/">
+                                            {% csrf_token %}
+                                            
+                                            <div class="row">
+                                                <!-- Driver Dropdown -->
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Driver</label>
+                                                    <select name="driver" class="form-control" required>
+                                                        <option value="" disabled selected>Select Driver</option>
+                                                        {% for driver in  drivers %}
+                                                            <option value="{{ driver.id }}">{{ driver.name }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+
+                                                <!-- Assistant Dropdown -->
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Driver Assistant</label>
+                                                    <select name="assistant" class="form-control">
+                                                        <option value="" disabled selected>Select Assistant</option>
+                                                        {% for assistant in assistants %}
+                                                            <option value="{{ assistant.id }}">{{ assistant.name }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+
+                                                <!-- Vehicle Dropdown -->
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Vehicle</label>
+                                                    <select name="vehicle" class="form-control" required>
+                                                        <option value="" disabled selected>Select Vehicle</option>
+                                                        {% for vehicle in vehicles %}
+                                                            <option value="{{ vehicle.id }}">{{ vehicle.vehicle_type }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="text-end mt-3">
+                                                <button type="submit" class="btn btn-primary">
+                                                    <i class="fas fa-save"></i> Save
+                                                </button>
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                    <i class="fas fa-times"></i> Cancel
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
             {% endblock %}
 
 
             {% block content %}
             <div class="card-body">
-                <div class="">
-                    <table id="vehicleTable" class="table table-striped table-bordered datatable">
-                        <thead class="table-dark">
-                            <tr>
-                                
-                                <th>Driver</th>
-                                <th>Driver Assistant</th>
-                                <th> Vehicle License Plate</th>
-                                <th>Vehicle Type</th>
-                                <th>Status</th>
-                                <th>Vehicle Image</th>
-                                <th>Actions</th>
-                                
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for assignment in assignments %}
-                            <tr id="vehicleRow{{ vehicle.id }}">
-                                <td>{{ assignment.driver.name }}</td>
-                                <td>{{ assignment.assigned_assistant.name }}</td>
-                                <td>{{ assignment.assigned_vehicle.license_plate }}</td>
-                                <td>{{ assignment.assigned_vehicle.vehicle_type }}</td>
-                                
-                                <td>
-                                    {% if assignment.assigned_vehicle.status == 'available' %}
-                                        <span class="badge bg-success">Available</span>
-                                    {% elif assignment.assigned_vehicle.status == 'maintenance' %}
-                                        <span class="badge bg-warning">In Maintenance</span>
-                                    {% elif assignment.assigned_vehicle.status == 'in_use' %}
-                                        <span class="badge bg-danger">In Use</span>
-                                    {% endif %}
-                                </td>
-                                
-                                <td>
-                                    {% if assignment.assigned_vehicle.vehicle_image %}
-                                        <a href="#" data-bs-toggle="modal" data-bs-target="#imageModal{{ assignment.assigned_vehicle.id }}">
-                                            <img src="{{ assignment.assigned_vehicle.vehicle_image.url }}" alt="Vehicle Image" class="img-thumbnail" width="30">
-                                        </a>
-                                        <div class="modal fade" id="imageModal{{ assignment.assigned_vehicle.id }}" tabindex="-1" aria-hidden="true">
-                                            <div class="modal-dialog modal-dialog-centered">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title">Vehicle Image</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                                    </div>
-                                                    <div class="modal-body text-center">
-                                                        <img src="{{ assignment.assigned_vehicle.vehicle_image.url }}" alt="Full Size Vehicle Image" class="img-fluid">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    {% else %}
-                                        <span class="text-muted">No Image</span>
-                                    {% endif %}
-                                </td>
+                <div class="d-flex justify-content-between">
+                    <h5>Driver-Vehicle Assignments</h5>
+                    <input type="file" id="importAssignments" accept=".csv, .xlsx" class="form-control w-25">
+                </div>
+                <table id="vehicleTable" class="table table-striped table-bordered datatable">
+                    <thead class="">
+                        <tr>
+                            <th>DRIVER NAME</th>
+                            <th>DRIVER ASSISTANT NAME</th>
+                            <th>VEHICLE LICENSE PLATE</th>
+                            <th>VEHICLE TYPE</th>
+                            <th>ACTIONS</th>
+                        </tr>
+                        
+                    </thead>
+                </table>
+            </div>
             
-                                <td>
-                                    <div class="dropdown">
-                                        <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                            <i class="fas fa-ellipsis-v"></i>
-                                        </button>
-                                        <ul class="dropdown-menu">
-                                            <li>
-                                                <a class="dropdown-item edit-vehicle" href="#" data-bs-toggle="modal" data-bs-target="#editModal{{ assignment.assigned_vehicle.id }}" data-id="{{ vehicle.id }}">
-                                                    Edit
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a class="dropdown-item text-danger delete-vehicle" href="#" onclick="">
-                                                    Delete
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </td>
-                            </tr>
-            
-                            <!-- Edit assignment.assigned_vehicle Modal -->
-                            <div class="modal fade" id="editModal{{ assignment.assigned_vehicle.id }}" tabindex="-1" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">Edit assignment.assigned_vehicle</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <form id="editassignment.assigned_vehicleForm{{ assignment.assigned_vehicle.id }}" action="{% url 'vehicle_update' assignment.assigned_vehicle.id %}" method="POST">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="_method" value="PUT">
-            
-                                                <div class="mb-3">
-                                                    <label class="form-label">License Plate</label>
-                                                    <input type="text" class="form-control" name="license_plate" value="{{ assignment.assigned_vehicle.license_plate }}">
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">vehicle Type</label>
-                                                    <input type="text" class="form-control" name="assignment.assigned_vehicle_type" value="{{ assignment.assigned_vehicle.vehicle_type }}">
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Make</label>
-                                                    <input type="text" class="form-control" name="make" value="{{ assignment.assigned_vehicle.make }}">
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Model</label>
-                                                    <input type="text" class="form-control" name="model" value="{{ assignment.assigned_vehicle.model }}">
-                                                </div>
-            
-                                                <button type="submit" class="btn btn-primary">Save Changes</button>
-                                            </form>
-                                        </div>
-                                    </div>
+
+
+
+            <!-- Edit Vehicle Modal -->
+            <div class="modal fade" id="editModal{{ assignment.assigned_vehicle.id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Edit {{ assignment.assigned_vehicle.license_plate }}</h5>
+                            
+                        
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="editVehicleForm{{ assignment.assigned_vehicle.id }}" 
+                                action="" 
+                                method="POST">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label class="form-label">License Plate</label>
+                                    <input type="text" class="form-control" name="license_plate" value="{{ assignment.assigned_vehicle.license_plate }}">
                                 </div>
-                            </div>
-            
-                            {% empty %}
-                            <tr>
-                                <td colspan="7" class="text-center text-muted">No assignment.assigned_vehicles found.</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                                <div class="mb-3">
+                                    <label class="form-label">Vehicle Type</label>
+                                    <input type="text" class="form-control" name="vehicle_type" value="{{ assignment.assigned_vehicle.vehicle_type }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Make</label>
+                                    <input type="text" class="form-control" name="make" value="{{ assignment.assigned_vehicle.make }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Model</label>
+                                    <input type="text" class="form-control" name="model" value="{{ assignment.assigned_vehicle.model }}">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
-            {% endblock %}
+
+
+            <div class="modal fade" id="clientRequestModal{{ assignment.assigned_vehicle.id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content" style="width: 800px;">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Edit {{ assignment.assigned_vehicle.license_plate }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="editVehicleForm{{ assignment.assigned_vehicle.id }}" 
+                            
+                            method="POST">
+                                {% csrf_token %}
+                            
+                             
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Client Name</label>
+                                        <input type="text" class="form-control" name="client_name" 
+                                                value="{{ client_request.client_name }}" 
+                                                placeholder="Enter client's name" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" class="form-control" name="email" 
+                                                value="{{ client_request.email }}" 
+                                                placeholder="Enter client email" required>
+                                    </div>
+                                </div>
+                            
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Request Type</label>
+                                        <select name="request_type" class="form-control" required>
+                                            {% for type, label in request_types %}
+                                                <option value="{{ type }}" {% if client_request.request_type == type %}selected{% endif %}>
+                                                    {{ label }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Scheduled Date</label>
+                                        <input type="datetime-local" class="form-control" name="scheduled_date" 
+                                                value="{{ client_request.scheduled_date|date:'Y-m-d\TH:i' }}" required>
+                                    </div>
+                                </div>
+                            
+                                <div class="mb-3">
+                                    <label class="form-label">Description</label>
+                                    <textarea class="form-control" name="description" rows="3" 
+                                                placeholder="Enter request details" required>{{ client_request.description }}</textarea>
+                                </div>
+                            
+                            
+                            
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label class="form-label">License Plate</label>
+                                        <input type="text" class="form-control" id="license_plate" readonly>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Vehicle Type</label>
+                                        <input type="text" class="form-control" id="vehicle_type" readonly>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Make</label>
+                                        <input type="text" class="form-control" id="make" readonly>
+                                    </div>
+                                </div>
+                            
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Model</label>
+                                        <input type="text" class="form-control" id="model" readonly>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Select Vehicle</label>
+                                        <select id="vehicle_select" class="form-control" name="vehicle_id" required>
+                                            <option value="">-- Select Vehicle --</option>
+                                            {% for assignment in assignments %}
+                                            <option value="{{ assignment.vehicle.id }}"
+                                                    data-license="{{ assignment.vehicle.license_plate }}"
+                                                    data-type="{{ assignment.vehicle.vehicle_type }}"
+                                                    data-make="{{ assignment.vehicle.make }}"
+                                                    data-model="{{ assignment.vehicle.model }}"
+                                                    data-driver="{{ assignment.current_driver.id }}"
+                                                    data-assistant="{{ assignment.current_assistant.id }}">
+                                                {{ assignment.vehicle.vehicle_type }} - {{ assignment.vehicle.license_plate }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                    
+                            
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Driver</label>
+                                        <select id="driver_select" class="form-control" name="driver_id" required>
+                                            <option value="">-- Select Driver --</option>
+                                            {% for driver in drivers %}
+                                            <option value="{{ driver.id }}">{{ driver.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Driver Assistant</label>
+                                        <select id="assistant_select" class="form-control" name="assistant_id">
+                                            <option value="">None</option>
+                                            {% for assistant in assistants %}
+                                            <option value="{{ assistant.id }}">{{ assistant.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            
+                                <script>
+                                document.getElementById("vehicle_select").addEventListener("change", function() {
+                                    var selectedOption = this.options[this.selectedIndex];
+                            
+                                    // Auto-fill vehicle details
+                                    document.getElementById("license_plate").value = selectedOption.getAttribute("data-license") || "";
+                                    document.getElementById("vehicle_type").value = selectedOption.getAttribute("data-type") || "";
+                                    document.getElementById("make").value = selectedOption.getAttribute("data-make") || "";
+                                    document.getElementById("model").value = selectedOption.getAttribute("data-model") || "";
+                            
+                                    // Auto-select driver and assistant
+                                    document.getElementById("driver_select").value = selectedOption.getAttribute("data-driver") || "";
+                                    document.getElementById("assistant_select").value = selectedOption.getAttribute("data-assistant") || "";
+                                });
+                                </script>
+                            
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Pickup Location</label>
+                                        <input type="text" class="form-control" name="pickup_location" 
+                                                value="{{ client_request.pickup_location }}" 
+                                                placeholder="Enter pickup location" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Delivery Location</label>
+                                        <input type="text" class="form-control" name="delivery_location" 
+                                                value="{{ client_request.delivery_location }}" 
+                                                placeholder="Enter delivery location" required>
+                                    </div>
+                                </div>
+                            
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Status</label>
+                                        <select name="status" class="form-control" required>
+                                            <option value="PENDING" {% if client_request.status == 'PENDING' %}selected{% endif %}>Pending</option>
+                                            <option value="IN_PROGRESS" {% if client_request.status == 'IN_PROGRESS' %}selected{% endif %}>In Progress</option>
+                                            <option value="COMPLETED" {% if client_request.status == 'COMPLETED' %}selected{% endif %}>Completed</option>
+                                            <option value="CANCELLED" {% if client_request.status == 'CANCELLED' %}selected{% endif %}>Cancelled</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Trip Log</label>
+                                        <textarea class="form-control" name="trip_log">{{ dispatch.trip_log }}</textarea>
+                                    </div>
+                                </div>
+                            
+                                <br>
+                                <div style="display: flex; justify-content: center;">
+                                    <button type="submit" class="btn btn-success mt-3">Save Client Request</button>
+                                </div>
+                    
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                    
+
+
+
+
+
+
+
+
+                    <div class="modal fade" id="assignmentRequestModal{{ assignment.assigned_vehicle.id }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content" style="width: 800px;">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Edit {{ assignment.assigned_vehicle.license_plate }}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="editVehicleForm{{ assignment.assigned_vehicle.id }}" >
+
+                                    
+                                        <!-- Vehicle Assignment Section -->
+                                        <div style="display: flex; justify-content: center;">
+                                            <h4 class="mb-3">Vehicle Assignment</h4>
+                                        </div>
+                                    
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <label class="form-label">License Plate</label>
+                                                <input type="text" class="form-control" id="license_plate" readonly>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Vehicle Type</label>
+                                                <input type="text" class="form-control" id="vehicle_type" readonly>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Make</label>
+                                                <input type="text" class="form-control" id="make" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Driver</label>
+                                                <select id="driver_select" class="form-control" name="driver_id" required>
+                                                    <option value="">-- Select Driver --</option>
+                                                    {% for driver in drivers %}
+                                                    <option value="{{ driver.id }}">{{ driver.name }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Driver Assistant</label>
+                                                <select id="assistant_select" class="form-control" name="assistant_id">
+                                                    <option value="">None</option>
+                                                    {% for assistant in assistants %}
+                                                    <option value="{{ assistant.id }}">{{ assistant.name }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Model</label>
+                                                <input type="text" class="form-control" id="model" readonly>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Select Vehicle</label>
+                                                <select id="vehicle_select" class="form-control" name="vehicle_id" required>
+                                                    <option value="">-- Select Vehicle --</option>
+                                                    {% for assignment in assignments %}
+                                                    <option value="{{ assignment.vehicle.id }}"
+                                                            data-license="{{ assignment.vehicle.license_plate }}"
+                                                            data-type="{{ assignment.vehicle.vehicle_type }}"
+                                                            data-make="{{ assignment.vehicle.make }}"
+                                                            data-model="{{ assignment.vehicle.model }}"
+                                                            data-driver="{{ assignment.current_driver.id }}"
+                                                            data-assistant="{{ assignment.current_assistant.id }}">
+                                                        {{ assignment.vehicle.vehicle_type }} - {{ assignment.vehicle.license_plate }}
+                                                    </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                           
+                                        </div>
+                                        <div style="display: flex; justify-content: center;">
+                                            <button type="submit" class="btn btn-success mt-3">Save Client Request</button>
+                                        </div>
+
+                                    </form>
+                                </div>
+                            </div>  </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
+    </div>    
+ </div>
+
+<!-- Include DataTables and jQuery -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.dataTables.min.css">
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js"></script>
+
+<!-- Export & Import Scripts -->
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.colVis.min.js"></script>
+
+                
+
+<script>
+        $(document).ready(function () {
+        let table = $('#vehicleTable').DataTable({
+            paging: true,
+            searching: true,
+            ordering: true,
+            info: true,
+            responsive: true,
+            autoWidth: false,
+            processing: true,
+            serverSide: false,
+            "ajax": {
+                "url": "/transport/api/assignments/",
+                "type": "GET",
+                "dataSrc": function (json) {
+                    console.log(json); // Debug: Check API response in console
+                    return json.data || [];
+                }
+            },
+
+            "columns": [
+                { "data": "current_driver.name", "defaultContent": "N/A", "className": "text-center align-middle", "render": function (data) { return data ? data.toUpperCase() : "N/A"; } },
+                { "data": "current_assistant.name", "defaultContent": "N/A", "className": "text-center align-middle", "render": function (data) { return data ? data.toUpperCase() : "N/A"; } },
+                { "data": "vehicle.license_plate", "defaultContent": "N/A", "className": "text-center align-middle", "render": function (data) { return data ? data.toUpperCase() : "N/A"; } },
+                { 
+                    "data": "vehicle.vehicle_type", 
+                    "render": function (data) {
+                        return data ? `${data.type.toUpperCase()} - ${data.make.toUpperCase()} ${data.model.toUpperCase()}` : "N/A";
+                    },
+                    
+                },
+                {
+                    "data": "id",
+                    "render": function (data, type, row) {
+                        return `
+                            <div class="d-flex justify-content-center gap-2">
+                                
+                                <button class="btn btn-warning btn-sm edit-btn edit-vehicle" data-bs-toggle="modal" data-bs-target="#assignmentRequestModal{{ assignment.assigned_vehicle.id }}" data-id="{{ assignment.assigned_vehicle.id}}">VIEW</button>
+                                <button class="btn btn-danger btn-sm delete-btn delete-vehicle"  id="delete-assignment" data-id="${data}">DELETE</button>
+                            </div>`;
+                    },
+                    
+                }
+            ],
+            "dom": 'Bfrtip',  // Add buttons to the table
+"buttons": [
+    {
+        extend: 'csv',
+        text: 'Export CSV',
+        className: 'btn btn-sm btn-info'
+    },
+    {
+        extend: 'excel',
+        text: 'Export Excel',
+        className: 'btn btn-sm btn-success'
+    },
+    {
+        extend: 'pdf',
+        text: 'Export PDF',
+        className: 'btn btn-sm btn-danger'
+    },
+    {
+        extend: 'print',
+        text: 'Print',
+        className: 'btn btn-sm btn-primary'
+    }
+]
+        });
+
+        // Create Maintenance Request
+        $("#addMaintenanceForm").submit(function(e) {
+            e.preventDefault();
+            let formData = new FormData(this);
+
+            $.ajax({
+                url: "/transport/create-new-maintenance-request/",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                headers: { "X-CSRFToken": getCookie("csrftoken") },
+                success: function(response) {
+                    alert(response.message);
+                    $("#addVehicleModal").modal("hide");  // Close modal
+                    $("#addMaintenanceForm")[0].reset();  // Reset form
+                    table.ajax.reload();  // Reload table
+                },
+                error: function(xhr) {
+                    console.error("Error:", xhr.responseText);
+                    alert("Failed to create request: " + xhr.responseText);
+                }
+            });
+        });
+
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== "") {
+                let cookies = document.cookie.split(";");
+                for (let i = 0; i < cookies.length; i++) {
+                    let cookie = cookies[i].trim();
+                    if (cookie.startsWith(name + "=")) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Open Create Modal
+        // $("#createAssignmentBtn").on("click", function () {
+        //     $("#assignmentModalTitle").text("Create Assignment");
+        //     $("#assignmentForm")[0].reset();
+        //     $("#assignmentId").val("");
+        //     $("#assignmentModal").modal("show");
+        // });
+
+        // Submit Create or Update Assignment
+        // Submit Create or Update Assignment
+        $("#assignmentForm").submit(function (e) {
+            e.preventDefault();
+
+            let assignmentId = $("#assignmentId").val();
+            let url = assignmentId ? `/transport/api/assignments/${assignmentId}/update/` : "/transport/create_client_request/";
+            let method = assignmentId ? "PUT" : "POST";
+
+            let formData = {
+                current_driver: $("#driverName").val(),
+                current_assistant: $("#assistantName").val(),
+                license_plate: $("#licensePlate").val(),
+                vehicle_type: $("#vehicleType").val()
+            };
+
+            $.ajax({
+                url: url,
+                type: method,
+                contentType: "application/json",
+                data: JSON.stringify(formData),
+                headers: { "X-CSRFToken": '{{ csrf_token }}' },
+                success: function (response) {
+                    alert(response.message || "Assignment saved successfully!");
+                    $("#assignmentModal").modal("hide");
+                    table.ajax.reload();
+                },
+                error: function (xhr) {
+                    let errorMsg = JSON.parse(xhr.responseText).error;
+                    alert("Error: " + errorMsg);
+                }
+            });
+        });
+
+
+        // Open Edit Modal
+        $(document).on("click", ".edit-assignment", function () {
+            $("#assignmentModalTitle").text("Edit Assignment");
+            $("#assignmentId").val($(this).data("id"));
+            $("#driverName").val($(this).data("driver"));
+            $("#assistantName").val($(this).data("assistant"));
+            $("#licensePlate").val($(this).data("license"));
+            $("#vehicleType").val($(this).data("vehicle"));
+
+            $("#assignmentModal").modal("show");
+        });
+
+
+        $(document).ready(function() {
+        // Handle form submission
+        $("form[id^='editVehicleForm']").submit(function(e) {
+            e.preventDefault(); // Prevent default form submission
+
+            let formId = $(this).attr("id");
+            let modalId = formId.replace("editVehicleForm", "clientRequestModal");
+            let formData = {
+                client_name: $(this).find("input[name='client_name']").val(),
+                email: $(this).find("input[name='email']").val(),
+                request_type: $(this).find("select[name='request_type']").val(),
+                description: $(this).find("textarea[name='description']").val(),
+                pickup_location: $(this).find("input[name='pickup_location']").val(),
+                delivery_location: $(this).find("input[name='delivery_location']").val(),
+                scheduled_date: $(this).find("input[name='scheduled_date']").val(),
+                vehicle_id: $(this).find("select[name='vehicle_id']").val(),
+                driver_id: $(this).find("select[name='driver_id']").val(),
+                assistant_id: $(this).find("select[name='assistant_id']").val(),
+                status: $(this).find("select[name='status']").val(),
+                trip_log: $(this).find("textarea[name='trip_log']").val()
+            };
+
+                    $.ajax({
+                        url: "/transport/create_client_request/", // Update with actual API endpoint
+                        type: "POST",
+                        contentType: "application/json",
+                        data: JSON.stringify(formData),
+                        headers: {
+                            "X-CSRFToken": $("input[name=csrfmiddlewaretoken]").val() // CSRF token for Django
+                        },
+                        success: function(response) {
+                            alert("Client Request saved successfully!");
+                            $("#" + formId)[0].reset(); // Reset the form
+                            $("#" + modalId).modal("hide"); // Close the modal
+                            location.reload(); // Reload the page to update DataTable
+                        },
+                        error: function(xhr) {
+                            let errorMsg = xhr.responseJSON ? xhr.responseJSON.error : "Something went wrong.";
+                            alert("Error: " + errorMsg);
+                        }
+                    });
+                });
+            });
+
+
+        // Delete Assignment
+        $(document).on("click", "#delete-assignment", function () {
+            let assignmentId = $(this).data("id");
+            if (!confirm("Are you sure you want to delete this assignment?")) return;
+
+            $.ajax({
+                url: `/transport/api/assignments/${assignmentId}/delete/`,
+                type: "DELETE",
+                headers: { "X-CSRFToken": '{{ csrf_token }}' },
+                success: function () {
+                    alert("Assignment deleted successfully!");
+                    table.ajax.reload();
+                },
+                error: function (xhr) {
+                    alert("Error: " + xhr.responseText);
+                }
+            });
+        });
+    });
+
+</script>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

@@ -1,3 +1,5 @@
+
+
 {% extends 'web_base.html' %}
 {% load i18n static %}
 {% load custom_filters %}
@@ -36,274 +38,109 @@
     <div class="row">
         <div class="col-xxl-9">
             
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon">
-                        <i class="fas fa-cart-plus fs-14 text-muted"></i>
-                    </div>
-                    <h4 class="card-title mb-0">Overall Sales</h4>
-                    <div class="dropdown card-addon">
-                        <a href="#" class="dropdown-toggle arrow-none card-drop" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="mdi mdi-dots-sidebar"></i>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-end">
-                            <!-- item-->
-                            <a href="javascript:void(0);" class="dropdown-item">Sales Report</a>
-                            <!-- item-->
-                            <a href="javascript:void(0);" class="dropdown-item">Export Report</a>
-                            <!-- item-->
-                            <a href="javascript:void(0);" class="dropdown-item">Profit</a>
-                            <!-- item-->
-                            <a href="javascript:void(0);" class="dropdown-item">Action</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-sm-4">
-                            <div class="d-flex justify-content-between align-content-end shadow-lg p-3">
-                                <div>
-                                    <p class="text-muted text-truncate mb-2">Total sales</p>
-                                    <h5 class="mb-0">$12,253</h5>
-                                </div>
-                                <div class="text-success float-end">
-                                    <i class="mdi mdi-menu-up"> </i>2.2%
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-sm-4">
-                            <div class="d-flex justify-content-between align-content-end shadow-lg p-3">
-                                <div>
-                                    <p class="text-muted text-truncate mb-2">Latest sales</p>
-                                    <h5 class="mb-0">$34,254</h5>
-                                </div>
-                                <div class="text-success float-end">
-                                    <i class="mdi mdi-menu-up"> </i>2.1%
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-sm-4">
-                            <div class="d-flex justify-content-between align-content-end shadow-lg p-3">
-                                <div>
-                                    <p class="text-muted text-truncate mb-2">Last sales</p>
-                                    <h5 class="mb-0">$32,695</h5>
-                                </div>
-                                <div class="text-success float-end">
-                                    <i class="mdi mdi-menu-up"> </i>1.8%
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                </div>
-                    <div id="sales_figures" data-colors='["--bs-info", "--bs-success"]' class="apex-charts" dir="ltr"></div>
-                </div>
-            </div>
-            
-
             {% comment %} Total Balance {% endcomment %}
             <div class="row">
-                <div class="col-xl-4">
-                    <div class="card bg-danger-subtle" style="background: url('/static/images/dashboard/dashboard-shape-1.png'); background-repeat: no-repeat; background-position: bottom center; ">
-                        <div class="card-body">
-                            <div class="d-flex">
-                                <div class="avatar avatar-sm avatar-label-danger">
-                                    <i class="mdi mdi-buffer mt-1"></i>
+                {% for department in department_data %}
+                    <div class="col-xl-4">
+                        <div class="card bg-{{ department.color }}-subtle" 
+                            style="background: url('/static/images/dashboard/dashboard-shape-{{ forloop.counter }}.png'); 
+                            background-repeat: no-repeat; background-position: bottom center;">
+                            
+                            <div class="card-body">
+                                <div class="d-flex">
+                                    <div class="avatar avatar-sm avatar-label-{{ department.color }}">
+                                        <i class="{{ department.icon }} mt-1"></i>
+                                    </div>
+                                    <div class="ms-3">
+                                        <p class="text-{{ department.color }} mb-1">{{ department.name }}</p>
+                                        <h4 class="mb-0">Employees: {{ department.total_employees }}</h4>
+                                    </div>
                                 </div>
-                                <div class="ms-3">
-                                    <p class="text-danger mb-1">Total balance</p>
-                                    <h4 class="mb-0">$1,452.55</h4>
+                                <div class="mt-3 mb-2">
+                                    <p class="mb-0">Total Inventory: {{ department.total_inventory }}</p>
+                                    <p class="mb-0">Total Requests: {{ department.total_requests }}</p>
                                 </div>
-                            </div>
-                            <div class="hstack gap-2 mt-3">
-                                <button class="btn btn-light">Transfer</button>
-                                <button class="btn btn-info">Request</button>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-xl-4">
-                    <div class="card bg-success-subtle" style="background: url('/static/images/dashboard/dashboard-shape-2.png'); background-repeat: no-repeat; background-position: bottom center; ">
-                        <div class="card-body">
-                            <div class="d-flex">
-                                <div class="avatar avatar-sm avatar-label-success">
-                                    <i class="mdi mdi-cash-usd-outline mt-1"></i>
-                                </div>
-                                <div class="ms-3">
-                                    <p class="text-success mb-1">Upcoming payments</p>
-                                    <h4 class="mb-0">$120</h4>
-                                </div>
-                            </div>
-                            <div class="mt-3 mb-2">
-                                <p class="mb-0">4 not confirmed</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-4">
-                    <div class="card bg-info-subtle" style="background: url('/static/images/dashboard/dashboard-shape-3.png'); background-repeat: no-repeat; background-position: bottom center; ">
-                        <div class="card-body">
-                            <div class="d-flex">
-                                <div class="avatar avatar-sm avatar-label-info">
-                                    <i class="mdi mdi-webhook mt-1"></i>
-                                </div>
-                                <div class="ms-3">
-                                    <p class="text-info mb-1">Finished appt.</p>
-                                    <h4 class="mb-0">72</h4>
-                                </div>
-                            </div>
-                            <div class="mt-3 mb-2">
-                                <p class="mb-0"><span class="text-primary me-2 fs-14"><i class="fas fa-caret-up me-1"></i>3.4%</span>vs last month</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                {% endfor %}
             </div>
+            
+            
             {% comment %} End Total Balance {% endcomment %}
             
             <!-- end row -->
 
              {% comment %} Sales by Product Category {% endcomment %}
-            <div class="row">
+             <div class="row">
+                <!-- Sales by Inventory Category -->
                 <div class="col-xl-8">
                     <div class="card">
                         <div class="card-header">
                             <div class="card-icon">
-                                <i class="fas fa-hockey-puck fs-14 text-muted"></i>
+                                <i class="fas fa-boxes fs-14 text-muted"></i>
                             </div>
-                            <h4 class="card-title mb-0">Sales by product category</h4>
+                            <h4 class="card-title mb-0">Inventory by Category</h4>
                         </div>
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-sm-6">
+                                    {% for inventory in inventories|slice:":4" %}
                                     <div class="row mb-2">
                                         <div class="col-6">
                                             <div>
-                                                <p><i class="mdi mdi-brightness-5 text-primary me-2"></i>Clothes <span class="text-muted fs-14">-50%</span></p>
-                                            </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div>
-                                                <p><i class="mdi mdi-briefcase-variant-outline text-danger me-2"></i>Kids <span class="text-muted fs-14">-50%</span></p>
+                                                <p><i class="mdi mdi-package-variant text-warning me-2"></i> {{ inventory.category }} 
+                                                    <span class="text-muted fs-14"> ({{ inventory.quantity }})</span>
+                                                </p>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="row mb-2">
-                                        <div class="col-6">
-                                            <div>
-                                                <p><i class="mdi mdi-cart-arrow-right text-info me-2"></i>Cosmetics <span class="text-muted fs-14">-50%</span></p>
-                                            </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div>
-                                                <p><i class="mdi mdi-checkbox-multiple-blank text-warning me-2"></i>Men <span class="text-muted fs-14">-50%</span></p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row mb-2">
-                                        <div class="col-6">
-                                            <div>
-                                                <p><i class="mdi mdi-chess-queen text-success me-2"></i>Kitchen <span class="text-muted fs-14">-50%</span></p>
-                                            </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div>
-                                                <p><i class="mdi mdi-church text-info me-2"></i>Decor <span class="text-muted fs-14">-50%</span></p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row mb-2">
-                                        <div class="col-6">
-                                            <div>
-                                                <p><i class="mdi mdi-city text-warning me-2"></i>Outdoor <span class="text-muted fs-14">-50%</span></p>
-                                            </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div>
-                                                <p><i class="mdi mdi-currency-usd-circle text-primary me-2"></i>Lighting <span class="text-muted fs-14">-50%</span></p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row mb-2">
-                                        <div class="col-6">
-                                            <div>
-                                                <p><i class="mdi mdi-gamepad-circle text-danger me-2"></i>Dining <span class="text-muted fs-14">-50%</span></p>
-                                            </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <div>
-                                                <p><i class="mdi mdi-hexagon-multiple text-info me-2"></i>Women <span class="text-muted fs-14">-50%</span></p>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    {% endfor %}
                                 </div>
                                 <div class="col-sm-6">
                                     <div>
-                                        <div id="gradient_chart" data-colors='["--bs-primary", "--bs-success", "--bs-warning", "--bs-danger", "--bs-info", "--bs-dark", "--bs-purple", "--bs-orange"]' class="apex-charts" dir="ltr"></div>
+                                        <div id="inventory_chart" class="apex-charts" data-colors='["--bs-primary", "--bs-success", "--bs-warning"]' dir="ltr"></div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+            
+                <!-- Recent Activities (Employees) -->
                 <div class="col-xl-4">
                     <div class="card" style="overflow-y: auto; height: 304px;" data-simplebar="init">
                         <div class="card-header card-header-bordered">
                             <div class="card-icon text-muted"><i class="fa fa-clipboard-list fs-14"></i></div>
-                            <h3 class="card-title">Recent activities</h3>
+                            <h3 class="card-title">Recent Employee Activities</h3>
                             <div class="card-addon">
                                 <button class="btn btn-sm btn-label-primary">See all</button>
                             </div>
                         </div>
                         <div class="card-body">
                             <div class="timeline timeline-timed">
+                                {% for employee in employees|slice:":4" %}
                                 <div class="timeline-item">
-                                    <span class="timeline-time">10:00</span>
+                                    <span class="timeline-time">{{ employee.hire_date}}</span>
                                     <div class="timeline-pin"><i class="marker marker-circle text-primary"></i></div>
                                     <div class="timeline-content">
-                                        <div>
-                                            <span>Meeting with</span>
-                                            <div class="avatar-group ms-2">
-                                                <div class="avatar avatar-circle">
-                                                    <img src="{% static 'images/users/avatar-1.png' %}" alt="Avatar image" class="avatar-2xs" />
-                                                </div>
-                                                <div class="avatar avatar-circle">
-                                                    <img src="{% static 'images/users/avatar-2.png' %}" alt="Avatar image" class="avatar-2xs" />
-                                                </div>
-                                                <div class="avatar avatar-circle">
-                                                    <img src="{% static 'images/users/avatar-3.png' %}" alt="Avatar image" class="avatar-2xs" />
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <p class="mb-0">New hire: {{ employee.employee_name }} joined as {{ employee.position }} in {{ employee.department }}</p>
                                     </div>
                                 </div>
+                                {% empty %}
                                 <div class="timeline-item">
-                                    <span class="timeline-time">14:00</span>
-                                    <div class="timeline-pin"><i class="marker marker-circle text-danger"></i></div>
+                                    <span class="timeline-time">--:--</span>
                                     <div class="timeline-content">
-                                        <p class="mb-0">Received a new feedback on <a href="#">GoFinance</a> App product.</p>
+                                        <p class="mb-0 text-muted">No recent activities</p>
                                     </div>
                                 </div>
-                                <div class="timeline-item">
-                                    <span class="timeline-time">15:20</span>
-                                    <div class="timeline-pin"><i class="marker marker-circle text-success"></i></div>
-                                    <div class="timeline-content">
-                                        <p class="mb-0">Lorem ipsum dolor sit amit,consectetur eiusmdd tempor incididunt ut labore et dolore magna.</p>
-                                    </div>
-                                </div>
-                                <div class="timeline-item">
-                                    <span class="timeline-time">17:00</span>
-                                    <div class="timeline-pin"><i class="marker marker-circle text-info"></i></div>
-                                    <div class="timeline-content">
-                                        <p class="mb-0">Make Deposit <a href="#">USD 700</a> o ESL.</p>
-                                    </div>
-                                </div>
+                                {% endfor %}
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+            
             {% comment %} End Sales by Product Category {% endcomment %}
 
             {% comment %} Order Progress {% endcomment %}
@@ -331,208 +168,32 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="card-body">
-                            <div class="table-responsive-md">
-                                <table class="table text-nowrap mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th>Order ID</th>
-                                            <th>Status</th>
-                                            <th>Operators</th>
-                                            <th>Location</th>
-                                            <th>Progress</th>
-                                            <th>Start date</th>
-                                            <th>Estimation</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td class="align-middle">837563</td>
-                                            <td class="align-middle"><i class="marker marker-dot m-0 me-2 text-primary"></i> Arrived</td>
-                                            <td class="align-middle">
-                                                <div class="avatar-group">
-                                                    <div class="avatar avatar-circle">
-                                                        <img src="{% static 'images/users/avatar-1.png' %}" alt="Avatar image" class="avatar-2xs">
-                                                    </div>
-                                                    <div class="avatar avatar-circle">
-                                                        <img src="{% static 'images/users/avatar-2.png' %}" alt="Avatar image" class="avatar-2xs">
-                                                    </div>
-                                                    <div class="avatar avatar-circle">
-                                                        <img src="{% static 'images/users/avatar-3.png' %}" alt="Avatar image" class="avatar-2xs">
-                                                    </div>
-                                                    <div class="avatar avatar-circle">
-                                                        <img src="{% static 'images/users/avatar-4.png' %}" alt="Avatar image" class="avatar-2xs">
-                                                    </div>
-                                                    <div class="avatar avatar-circle">
-                                                        <img src="{% static 'images/users/avatar-5.png' %}" alt="Avatar image" class="avatar-2xs">
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="align-middle">Tokyo</td>
-                                            <td class="align-middle">
-                                                <div class="">
-                                                    <h6 class="">90%</h6>
-                                                    <div class="progress progress-sm">
-                                                        <div class="progress-bar bg-primary" style="width: 90%"></div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="align-middle">26/06/2023</td>
-                                            <td class="align-middle">27/06/2023</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="align-middle">982365</td>
-                                            <td class="align-middle"><i class="marker marker-dot m-0 me-2 text-danger"></i> Pending</td>
-                                            <td class="align-middle">
-                                                <div class="avatar-group">
-                                                    <div class="avatar avatar-circle">
-                                                        <img src="{% static 'images/users/avatar-6.png' %}" alt="Avatar image" class="avatar-2xs">
-                                                    </div>
-                                                    <div class="avatar avatar-circle">
-                                                        <img src="{% static 'images/users/avatar-7.png' %}" alt="Avatar image" class="avatar-2xs">
-                                                    </div>
-                                                    <div class="avatar avatar-circle">
-                                                        <img src="{% static 'images/users/avatar-8.png' %}" alt="Avatar image" class="avatar-2xs">
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="align-middle">San Francisco</td>
-                                            <td class="align-middle">
-                                                <div class="">
-                                                    <h6 class="">20%</h6>
-                                                    <div class="progress progress-sm">
-                                                        <div class="progress-bar bg-primary" style="width: 20%"></div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="align-middle">23/04/2023</td>
-                                            <td class="align-middle">28/04/2023</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="align-middle">872048</td>
-                                            <td class="align-middle"><i class="marker marker-dot m-0 me-2 text-success"></i> Moving</td>
-                                            <td class="align-middle">
-                                                <div class="avatar-group">
-                                                    <div class="avatar avatar-circle">
-                                                        <img src="{% static 'images/users/avatar-5.png' %}" alt="Avatar image" class="avatar-2xs">
-                                                    </div>
-                                                    <div class="avatar avatar-circle">
-                                                        <img src="{% static 'images/users/avatar-4.png' %}" alt="Avatar image" class="avatar-2xs">
-                                                    </div>
-                                                    <div class="avatar avatar-circle">
-                                                        <img src="{% static 'images/users/avatar-1.png' %}" alt="Avatar image" class="avatar-2xs">
-                                                    </div>
-                                                    <div class="avatar avatar-circle">
-                                                        <img src="{% static 'images/users/avatar-2.png' %}" alt="Avatar image" class="avatar-2xs">
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="align-middle">Edinburgh</td>
-                                            <td class="align-middle">
-                                                <div class="">
-                                                    <h6 class="">75%</h6>
-                                                    <div class="progress progress-sm">
-                                                        <div class="progress-bar bg-primary" style="width: 75%"></div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="align-middle">26/04/2023</td>
-                                            <td class="align-middle">30/04/2023</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="align-middle">324712</td>
-                                            <td class="align-middle"><i class="marker marker-dot m-0 me-2 text-warning"></i> Hold</td>
-                                            <td class="align-middle">
-                                                <div class="avatar-group">
-                                                    <div class="avatar avatar-circle">
-                                                        <img src="{% static 'images/users/avatar-3.png' %}" alt="Avatar image" class="avatar-2xs">
-                                                    </div>
-                                                    <div class="avatar avatar-circle">
-                                                        <img src="{% static 'images/users/avatar-4.png' %}" alt="Avatar image" class="avatar-2xs">
-                                                    </div>
-                                                    <div class="avatar avatar-circle">
-                                                        <img src="{% static 'images/users/avatar-5.png' %}" alt="Avatar image" class="avatar-2xs">
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="align-middle">Tokyo</td>
-                                            <td class="align-middle">
-                                                <div class="">
-                                                    <h6 class="">30%</h6>
-                                                    <div class="progress progress-sm">
-                                                        <div class="progress-bar bg-primary" style="width: 30%"></div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="align-middle">26/06/2023</td>
-                                            <td class="align-middle">30/06/2023</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="align-middle">128747</td>
-                                            <td class="align-middle"><i class="marker marker-dot m-0 me-2 text-success"></i> Moving</td>
-                                            <td class="align-middle">
-                                                <div class="avatar-group">
-                                                    <div class="avatar avatar-circle">
-                                                        <img src="{% static 'images/users/avatar-6.png' %}" alt="Avatar image" class="avatar-2xs">
-                                                    </div>
-                                                    <div class="avatar avatar-circle">
-                                                        <img src="{% static 'images/users/avatar-7.png' %}" alt="Avatar image" class="avatar-2xs">
-                                                    </div>
-                                                    <div class="avatar avatar-circle">
-                                                        <img src="{% static 'images/users/avatar-8.png' %}" alt="Avatar image" class="avatar-2xs">
-                                                    </div>
-                                                    <div class="avatar avatar-circle">
-                                                        <img src="{% static 'images/users/avatar-5.png' %}" alt="Avatar image" class="avatar-2xs">
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="align-middle">New York</td>
-                                            <td class="align-middle">
-                                                <div class="">
-                                                    <h6 class="">60%</h6>
-                                                    <div class="progress progress-sm">
-                                                        <div class="progress-bar bg-primary" style="width: 60%"></div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="align-middle">10/05/2023</td>
-                                            <td class="align-middle">15/05/2023</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="align-middle">415423</td>
-                                            <td class="align-middle"><i class="marker marker-dot m-0 me-2 text-danger"></i> Pending</td>
-                                            <td class="align-middle">
-                                                <div class="avatar-group">
-                                                    <div class="avatar avatar-circle">
-                                                        <img src="{% static 'images/users/avatar-2.png' %}" alt="Avatar image" class="avatar-2xs">
-                                                    </div>
-                                                    <div class="avatar avatar-circle">
-                                                        <img src="{% static 'images/users/avatar-6.png' %}" alt="Avatar image" class="avatar-2xs">
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="align-middle">London</td>
-                                            <td class="align-middle">
-                                                <div class="">
-                                                    <h6 class="">72%</h6>
-                                                    <div class="progress progress-sm">
-                                                        <div class="progress-bar bg-primary" style="width: 72%"></div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="align-middle">05/06/2023</td>
-                                            <td class="align-middle">26/06/2023</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+                        <table id="inventoryTable" class="table table-striped table-bordered datatable">
+                            <thead class="">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Item Name</th>
+                                    <th>Category</th>
+                                    <th>Inventory Item Description</th>
+                                    <th>Quantity</th>
+                                    <th>Transaction Status</th>
+                                    <!-- <th>From Department</th> -->
+                                    <th>To Department</th>
+                                    <th>Employee Name</th>
+                                    <!-- <th>Gender</th> -->
+                                    <th>Employee Phone</th>
+                                    <!-- <th>Ghana Card Number</th> -->
+                                    <th>Position</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                        </table>
+                            
                     </div>
                 </div>
             </div>
             {% comment %} End Order Progress {% endcomment %}
         </div>
-
         <div class="col-xxl-3">
             <div class="row">
                 {% comment %} Sale Analytics {% endcomment %}
@@ -540,37 +201,32 @@
                     <div class="card">
                         <div class="card-body">
                             <div class="float-end">
-                                <select class="form-select form-select-sm">
-                                    <option selected>Apr</option>
-                                    <option value="1">Mar</option>
+                                <select id="inventoryMonth" class="form-select form-select-sm">
+                                    <option value="4" selected>Apr</option>
+                                    <option value="3">Mar</option>
                                     <option value="2">Feb</option>
-                                    <option value="3">Jan</option>
+                                    <option value="1">Jan</option>
                                 </select>
                             </div>
-                            <h4 class="card-title mb-4">Sales Analytics</h4>
-                            <div id="pattern_chart" data-colors='["--bs-primary", "--bs-success", "--bs-warning", "--bs-danger", "--bs-info"]' class="apex-charts" dir="ltr"></div>
-
+                            <h4 class="card-title mb-4">Inventory Analytics</h4>
+                            
+                            <!-- Apex Chart -->
+                            <div id="inventory_chart" data-colors='["--bs-primary", "--bs-success", "--bs-warning"]' class="apex-charts" dir="ltr"></div>
+                        
                             <div class="row">
+                                {% for item in category_data %}
                                 <div class="col-4">
                                     <div class="text-center mt-4">
-                                        <p class="mb-2 text-truncate"><i class="mdi mdi-circle text-primary font-size-10 me-1"></i> Product A</p>
-                                        <h5>42 %</h5>
+                                        <p class="mb-2 text-truncate">
+                                            <i class="mdi mdi-circle text-{{ item.color }} font-size-10 me-1"></i> {{ item.category }}
+                                        </p>
+                                        <h5>{{ item.percentage }} %</h5>
                                     </div>
                                 </div>
-                                <div class="col-4">
-                                    <div class="text-center mt-4">
-                                        <p class="mb-2 text-truncate"><i class="mdi mdi-circle text-success font-size-10 me-1"></i> Product B</p>
-                                        <h5>26 %</h5>
-                                    </div>
-                                </div>
-                                <div class="col-4">
-                                    <div class="text-center mt-4">
-                                        <p class="mb-2 text-truncate"><i class="mdi mdi-circle text-warning font-size-10 me-1"></i> Product C</p>
-                                        <h5>42 %</h5>
-                                    </div>
-                                </div>
+                                {% endfor %}
                             </div>
                         </div>
+                        
                     </div>
                 </div>
                 {% comment %} End Sale Analytics {% endcomment %}
@@ -580,527 +236,300 @@
                     <div class="card">
                         <div class="card-header">
                             <div class="card-icon text-muted"><i class="fa fa-bell"></i></div>
-                            <h3 class="card-title">Notification</h3>
+                            <h3 class="card-title">Inventory Notifications</h3>
                             <div class="card-addon">
                                 <div class="dropdown">
                                     <button class="btn btn-sm py-0 btn-label-primary dropdown-toggle" data-bs-toggle="dropdown">All <i class="mdi mdi-chevron-down fs-17 align-middle ms-1"></i></button>
                                     <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated">
-                                        <a class="dropdown-item" href="#"><span class="badge badge-label-primary">Personal</span> </a>
-                                        <a class="dropdown-item" href="#"><span class="badge badge-label-info">Work</span> </a>
-                                        <a class="dropdown-item" href="#"><span class="badge badge-label-success">Important</span> </a>
-                                        <a class="dropdown-item" href="#"><span class="badge badge-label-danger">Company</span></a>
+                                        <a class="dropdown-item" href="#"><span class="badge badge-label-primary">Low Stock</span> </a>
+                                        <a class="dropdown-item" href="#"><span class="badge badge-label-info">Requests</span> </a>
+                                        <a class="dropdown-item" href="#"><span class="badge badge-label-success">Completed</span> </a>
+                                        <a class="dropdown-item" href="#"><span class="badge badge-label-danger">Critical</span></a>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="card-body">
                             <div class="rich-list rich-list-bordered rich-list-action">
-                                <div class="rich-list-item">
-                                    <div class="rich-list-prepend">
-                                        <div class="avatar avatar-xs avatar-label-info">
-                                            <div class=""><i class="fa fa-file-invoice"></i></div>
-                                        </div>
-                                    </div>
-                                    <div class="rich-list-content">
-                                        <h4 class="rich-list-title mb-1">New report has been received</h4>
-                                        <p class="rich-list-subtitle mb-0">2 min ago</p>
-                                    </div>
-                                    <div class="rich-list-append">
-                                        <div class="dropdown">
-                                            <button class="btn btn-sm btn-label-secondary btn-icon" data-bs-toggle="dropdown"><i class="fa fa-ellipsis-h fs-12"></i></button>
-                                            <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated">
-                                                <a class="dropdown-item" href="#">
-                                                    <div class="dropdown-icon"><i class="fa fa-check"></i></div>
-                                                    <span class="dropdown-content">Mark as read</span>
-                                                </a>
-                                                <a class="dropdown-item" href="#">
-                                                    <div class="dropdown-icon"><i class="fa fa-trash-alt"></i></div>
-                                                    <span class="dropdown-content">Delete</span>
-                                                </a>
-                                                <div class="dropdown-divider"></div>
-                                                <a class="dropdown-item" href="#">
-                                                    <div class="dropdown-icon"><i class="fa fa-cog"></i></div>
-                                                    <span class="dropdown-content">Settings</span>
-                                                </a>
+                
+                                {% for item in inventories %}
+                                    {% if item.quantity <= item.reorder_level %}
+                                        <div class="rich-list-item">
+                                            <div class="rich-list-prepend">
+                                                <div class="avatar avatar-xs avatar-label-danger">
+                                                    <div class=""><i class="fa fa-exclamation-triangle"></i></div>
+                                                </div>
+                                            </div>
+                                            <div class="rich-list-content">
+                                                <h4 class="rich-list-title mb-1">Low Stock: {{ item.name }}</h4>
+                                                <p class="rich-list-subtitle mb-0">Only {{ item.quantity }} left!</p>
+                                            </div>
+                                            <div class="rich-list-append">
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm btn-label-secondary btn-icon" data-bs-toggle="dropdown"><i class="fa fa-ellipsis-h fs-12"></i></button>
+                                                    <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated">
+                                                        <a class="dropdown-item" href="#">
+                                                            <div class="dropdown-icon"><i class="fa fa-plus-circle"></i></div>
+                                                            <span class="dropdown-content">Restock</span>
+                                                        </a>
+                                                        <a class="dropdown-item" href="#">
+                                                            <div class="dropdown-icon"><i class="fa fa-cog"></i></div>
+                                                            <span class="dropdown-content">Settings</span>
+                                                        </a>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                                <div class="rich-list-item">
-                                    <div class="rich-list-prepend">
-                                        <div class="avatar avatar-xs avatar-label-success">
-                                            <div class=""><i class="fa fa-shopping-basket"></i></div>
-                                        </div>
-                                    </div>
-                                    <div class="rich-list-content">
-                                        <h4 class="rich-list-title mb-1">Last order was completed</h4>
-                                        <p class="rich-list-subtitle mb-0">1 hrs ago</p>
-                                    </div>
-                                    <div class="rich-list-append">
-                                        <div class="dropdown">
-                                            <button class="btn btn-sm btn-label-secondary btn-icon" data-bs-toggle="dropdown"><i class="fa fa-ellipsis-h fs-12"></i></button>
-                                            <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated">
-                                                <a class="dropdown-item" href="#">
-                                                    <div class="dropdown-icon"><i class="fa fa-check"></i></div>
-                                                    <span class="dropdown-content">Mark as read</span>
-                                                </a>
-                                                <a class="dropdown-item" href="#">
-                                                    <div class="dropdown-icon"><i class="fa fa-trash-alt"></i></div>
-                                                    <span class="dropdown-content">Delete</span>
-                                                </a>
-                                                <div class="dropdown-divider"></div>
-                                                <a class="dropdown-item" href="#">
-                                                    <div class="dropdown-icon"><i class="fa fa-cog"></i></div>
-                                                    <span class="dropdown-content">Settings</span>
-                                                </a>
+                                    {% endif %}
+                                {% endfor %}
+                
+                                {% for request in inventory_request %}
+                                    <div class="rich-list-item">
+                                        <div class="rich-list-prepend">
+                                            <div class="avatar avatar-xs avatar-label-info">
+                                                <div class=""><i class="fa fa-clipboard-list"></i></div>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                                <div class="rich-list-item">
-                                    <div class="rich-list-prepend">
-                                        <div class="avatar avatar-xs avatar-label-danger">
-                                            <div class=""><i class="fa fa-users"></i></div>
+                                        <div class="rich-list-content">
+                                            <h4 class="rich-list-title mb-1">New Inventory Request</h4>
+                                            <p class="rich-list-subtitle mb-0">Requested: {{ request.item.name }} ({{ request.quantity }})</p>
                                         </div>
-                                    </div>
-                                    <div class="rich-list-content">
-                                        <h4 class="rich-list-title mb-1">Company meeting canceled</h4>
-                                        <p class="rich-list-subtitle mb-0">5 hrs ago</p>
-                                    </div>
-                                    <div class="rich-list-append">
-                                        <div class="dropdown">
-                                            <button class="btn btn-sm btn-label-secondary btn-icon" data-bs-toggle="dropdown"><i class="fa fa-ellipsis-h fs-12"></i></button>
-                                            <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated">
-                                                <a class="dropdown-item" href="#">
-                                                    <div class="dropdown-icon"><i class="fa fa-check"></i></div>
-                                                    <span class="dropdown-content">Mark as read</span>
-                                                </a>
-                                                <a class="dropdown-item" href="#">
-                                                    <div class="dropdown-icon"><i class="fa fa-trash-alt"></i></div>
-                                                    <span class="dropdown-content">Delete</span>
-                                                </a>
-                                                <div class="dropdown-divider"></div>
-                                                <a class="dropdown-item" href="#">
-                                                    <div class="dropdown-icon"><i class="fa fa-cog"></i></div>
-                                                    <span class="dropdown-content">Settings</span>
-                                                </a>
+                                        <div class="rich-list-append">
+                                            <div class="rich-list-append">
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm btn-label-secondary btn-icon" data-bs-toggle="dropdown">
+                                                        <i class="fa fa-ellipsis-h fs-12"></i>
+                                                    </button>
+                                                    <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated">
+                                                        <a class="dropdown-item approve-request" href="#" data-id="{{ request.id }}">
+                                                            <div class="dropdown-icon"><i class="fa fa-check"></i></div>
+                                                            <span class="dropdown-content">Approve</span>
+                                                        </a>
+                                                        <a class="dropdown-item reject-request" href="#" data-id="{{ request.id }}">
+                                                            <div class="dropdown-icon"><i class="fa fa-times"></i></div>
+                                                            <span class="dropdown-content">Reject</span>
+                                                        </a>
+                                                    </div>
+                                                </div>
                                             </div>
+                                        
+                                            
+                                            
                                         </div>
                                     </div>
-                                </div>
+                                {% endfor %}
+                
                             </div>
                         </div>
                     </div>
                 </div>
+                {% comment %} End Inventory Notifications {% endcomment %}
+                
                 {% comment %} End Notification {% endcomment %}
 
-                {% comment %} Campaign Earnings {% endcomment %}
-                <div class="col-xxl-12 order-3">
-                    <div class="card">
-                        <div class="card-header">
-                            <h4 class="card-title">Compaign Earnings</h4>
-                            <div class="dropdown card-addon">
-                                <a href="#" class="dropdown-toggle arrow-none card-drop" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="mdi mdi-dots-sidebar"></i>
-                                </a>
-                                <div class="dropdown-menu dropdown-menu-end">
-                                    <!-- item-->
-                                    <a href="javascript:void(0);" class="dropdown-item">Sales Report</a>
-                                    <!-- item-->
-                                    <a href="javascript:void(0);" class="dropdown-item">Export Report</a>
-                                    <!-- item-->
-                                    <a href="javascript:void(0);" class="dropdown-item">Profit</a>
-                                    <!-- item-->
-                                    <a href="javascript:void(0);" class="dropdown-item">Action</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="">
-                                <div class="mb-3">
-                                    <div id="semi_donut_chart" data-colors='["--bs-primary", "--bs-warning"]' class="apex-charts" dir="ltr"></div>
-                                </div>
-
-                                <div class="row justify-content-center mt-n5">
-                                    <div class="col-6">
-                                        <div class="p-2 shadow">
-                                            <p class="text-muted text-truncate mb-2">Earnings</p>
-                                            <h5 class="mb-0">$15.5k <span class="fs-12 text-primary ms-2"><i class="mdi mdi-arrow-up"></i> 17%</span></h5>
-                                        </div>
-                                    </div>
-                                    <div class="col-6">
-                                        <div class="p-2 shadow">
-                                            <p class="text-muted text-truncate mb-2">Expenses</p>
-                                            <h5 class="mb-0">$11.4k <span class="fs-12 text-danger ms-2"><i class="mdi mdi-arrow-down"></i> 14%</span></h5>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <div id="bar_chart" data-colors='["--bs-danger"]' class="apex-charts" dir="ltr"></div>
-                                </div>
-
-                                <div class="card" style="background: url('/static/images/widgets-shape2.png'); background-position: center; background-repeat: no-repeat; background-size: cover;">
-                                    <div class="bg-overlay bg-primary-subtle rounded"></div>
-                                    <div class="card-body">
-                                        <div class="row align-items-center">
-                                            <div class="col-7">
-                                                <h4 class="fs-16 mb-1">Need more idea? </h4>
-                                                <p class="text-muted mb-0">Upgrade to pro max for added benefits.</p>
-                                                <button class="btn btn-primary mt-4">Upgarde Now</button>
-                                            </div>
-                                            <div class="col-5">
-                                                <img src="{% static 'images/dashboard/upgarde-1.png' %}" alt="" class="img-fluid" style="height: 126px;">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% comment %} End Campaign Earnings {% endcomment %}
+                
 
                 {% comment %} Monthly Sales {% endcomment %}
+                {% comment %} Monthly Inventory Report {% endcomment %}
+                {% comment %} Monthly Inventory Report {% endcomment %}
                 <div class="col-xxl-12 col-xl-6 order-2 order-xxl-4">
                     <div class="card">
                         <div class="card-header">
                             <div class="card-icon">
                                 <i class="fas fa-calendar-alt fs-14 text-muted"></i>
                             </div>
-                            <h4 class="card-title mb-0">Monthly Sales</h4>
+                            <h4 class="card-title mb-0">Monthly Inventory</h4>
                         </div>
                         <div class="card-body">
-                            <div id="monthly_states" data-colors='["--bs-success", "--bs-danger", "--bs-warning"]' class="apex-charts" dir="ltr"></div>
+                            <div id="monthly_inventory_chart" data-colors='["--bs-primary", "--bs-warning", "--bs-info"]' class="apex-charts" dir="ltr"></div>
                         </div>
                     </div>
                 </div>
+                {% comment %} End Monthly Inventory Report {% endcomment %}
+
+                <script>
+                    document.addEventListener("DOMContentLoaded", function () {
+                        var options = {
+                            series: [{
+                                name: "Items Added",
+                                data: [{% for item in monthly_inventory %} {{ item.count }}, {% endfor %}]
+                            }],
+                            chart: {
+                                type: "bar",
+                                height: 350
+                            },
+                            xaxis: {
+                                categories: [{% for item in monthly_inventory %} "{{ item.month|date:'F Y' }}", {% endfor %}]
+                            }
+                        };
+
+                        var chart = new ApexCharts(document.querySelector("#monthly_inventory_chart"), options);
+                        chart.render();
+                    });
+                </script>
+
+
                 {% comment %} End Monthly Sales {% endcomment %}
             </div>
         </div>
     </div>
+    <meta name="csrf-token" content="{{ csrf_token }}">
+
     <!-- end row -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.dataTables.min.css">
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js"></script>
+    
+    <!-- Export & Import Scripts -->
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.colVis.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <div class="row">
-        {% comment %} Top Selling {% endcomment %}
-        <div class="col-xxl-8 col-xl-6">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon">
-                        <i class="fas fa-layer-group fs-14 text-muted"></i>
-                    </div>
-                    <h4 class="card-title mb-0">Top Selling</h4>
-                </div><!-- end card header -->
+<script>
+  function getCSRFToken() {
+    return document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+}
 
-                <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col-sm-8">
-                            <div id="products" data-colors='["--bs-primary"]' class="apex-charts" dir="ltr"></div>
-                        </div>
-                        <div class="col-sm-4">
-                            <div class="d-grid gap-2">
-                                <div class="mb-3">
-                                    <div class="d-flex justify-content-between">
-                                        <span class="text-muted">48%</span>
-                                        <span class="text-muted">Sunday</span>
-                                    </div>
-                                    <div class="progress" style="height: 6px;">
-                                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" style="width: 48%;"></div>
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <div class="d-flex justify-content-between">
-                                        <span class="text-muted">100%</span>
-                                        <span class="text-muted">Monday</span>
-                                    </div>
-                                    <div class="progress" style="height: 6px;">
-                                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-secondary" style="width: 100%;"></div>
-                                    </div>
-                                </div>
+async function processRequest(id, action) {
+    const result = await Swal.fire({
+        title: `Are you sure you want to ${action}?`,
+        text: "This action cannot be undone!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: `Yes, ${action}!`
+    });
 
-                                <div class="mb-3">
-                                    <div class="d-flex justify-content-between">
-                                        <span class="text-muted">40%</span>
-                                        <span class="text-muted">Tuesday</span>
-                                    </div>
-                                    <div class="progress" style="height: 6px;">
-                                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" style="width: 40%;"></div>
-                                    </div>
-                                </div>
+    if (!result.isConfirmed) return;
 
-                                <div class="mb-3">
-                                    <div class="d-flex justify-content-between">
-                                        <span class="text-muted">68%</span>
-                                        <span class="text-muted">Wednesday</span>
-                                    </div>
-                                    <div class="progress" style="height: 6px;">
-                                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" style="width: 68%;"></div>
-                                    </div>
-                                </div>
+    const url = `/inventory/process-request/${id}/${action}/`;
 
-                                <div class="mb-3">
-                                    <div class="d-flex justify-content-between">
-                                        <span class="text-muted">56%</span>
-                                        <span class="text-muted">Thursday</span>
-                                    </div>
-                                    <div class="progress" style="height: 6px;">
-                                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="width: 56%;"></div>
-                                    </div>
-                                </div>
+    try {
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": getCSRFToken(),
+                "Content-Type": "application/json"
+            }
+        });
 
-                                <div class="mb-3">
-                                    <div class="d-flex justify-content-between">
-                                        <span class="text-muted">80%</span>
-                                        <span class="text-muted">Friday</span>
-                                    </div>
-                                    <div class="progress" style="height: 6px;">
-                                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" style="width: 80%;"></div>
-                                    </div>
-                                </div>
+        const data = await response.json();
 
-                                <div class="">
-                                    <div class="d-flex justify-content-between">
-                                        <span class="text-muted">80%</span>
-                                        <span class="text-muted">Saturday</span>
-                                    </div>
-                                    <div class="progress" style="height: 6px;">
-                                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-dark" style="width: 92%;"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div><!-- end card-body -->
-            </div>
-            <!-- end card -->
-        </div>
-        {% comment %} End Top Selling {% endcomment %}
-        <!-- end col -->
+        if (!response.ok) {
+            throw new Error(data.message || "An error occurred!");
+        }
 
-        {% comment %} User by Traffic {% endcomment %}
-        <div class="col-xxl-4 col-xl-6">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-icon">
-                        <i class="fas fa-user-friends fs-14 text-muted"></i>
-                    </div>
-                    <h4 class="card-title mb-0">User by traffic</h4>
-                </div><!-- end card header -->
+        Swal.fire({
+            title: "Success!",
+            text: data.message,
+            icon: "success"
+        }).then(() => {
+            $('#inventoryTable').DataTable().ajax.reload(); // Reload DataTable
+        });
 
-                <div class="card-body">
-                    <div id="user_traffic" data-colors='["--bs-info", "--bs-primary"]' class="apex-charts" dir="ltr"></div>
-                </div><!-- end card-body -->
-            </div>
-            <!-- end card -->
-        </div>
-        {% comment %} End User by Traffic {% endcomment %}
-        <!-- end col -->
-    </div>
-    <!-- end row -->
+    } catch (error) {
+        Swal.fire({
+            title: "Error!",
+            text: error.message || "Error processing the request!",
+            icon: "error"
+        });
+    }
+}
 
-    <div class="row">
-        {% comment %} Transaction History {% endcomment %}
-        <div class="col-xl-6">
-            <div class="card">
-                <div class="card-header justify-content-between">
-                    <div class="card-icon text-muted"><i class="fas fa-sort-amount-up fs-14"></i></div>
-                    <h4 class="card-title">Transaction History</h4>
-                    <div class="card-addon dropdown">
-                        <button class="btn btn-label-primary py-0 btn-sm dropdown-toggle" data-bs-toggle="dropdown">Option <i class="mdi mdi-chevron-down fs-17 align-middle ms-1"></i></button>
-                        <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated">
-                            <a class="dropdown-item" href="#">
-                                <div class="dropdown-icon"><i class="fa fa-poll"></i></div>
-                                <span class="dropdown-content">Report</span>
-                            </a>
-                            <a class="dropdown-item" href="#">
-                                <div class="dropdown-icon"><i class="fa fa-chart-pie"></i></div>
-                                <span class="dropdown-content">Charts</span>
-                            </a>
-                            <a class="dropdown-item" href="#">
-                                <div class="dropdown-icon"><i class="fa fa-chart-line"></i></div>
-                                <span class="dropdown-content">Statistics</span>
-                            </a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="#">
-                                <div class="dropdown-icon"><i class="fa fa-cog"></i></div>
-                                <span class="dropdown-content">Settings</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="border-bottom text-center pb-3">
-                        <div class="d-flex align-items-center justify-content-center">
-                            <span class="text-primary fs-24 me-2"><i class="fas fa-arrow-circle-right"></i></span>
-                            <h4 class="display-5 mb-0">54</h4>
-                        </div>
-                        <p class="text-muted mb-0">Pending Invoices</p>
-                    </div>
-                    <div class="d-flex justify-content-between py-3">
-                        <p class="text-muted fs-5 mb-0">Invoice details</p>
+
+
+    $(document).ready(function () {
+        let table = $('#inventoryTable').DataTable({
+            dom: 'Bfrtip',
+            buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
+            paging: true,
+            searching: true,
+            ordering: true,
+            info: true,
+            responsive: true,
+            autoWidth: false,
+            processing: true,
+            serverSide: false,
+            "ajax": {
+                "url": "/inventory/all-request-inventory/",
+                "type": "GET",
+                "dataSrc": function (json) {
+                    return json.data || [];
+                }
+            },
+            "columns": [
+                { "data": "id", "className": "text-center align-middle" },
+                { "data": "item", "render": function (data) { return data ? data.toUpperCase() : "N/A"; }, "className": "text-center align-middle" },
+                { "data": "category", "render": function (data) { return data.toUpperCase(); }, "className": "text-center align-middle" },
+                { "data": "description", "render": function (data) { return data ? data.toUpperCase() : "N/A"; }, "className": "text-center align-middle" },
+                { "data": "quantity", "className": "text-center align-middle" },
+                { "data": "transaction_type", "render": function (data) { return data.toUpperCase(); }, "className": "text-center align-middle" },
+                { "data": "to_department", "render": function (data) { return data.toUpperCase(); }, "className": "text-center align-middle" },
+                { "data": "employee_name", "render": function (data) { return data ? data.toUpperCase() : "N/A"; }, "className": "text-center align-middle" },
+                { "data": "employee_phone", "defaultContent": "N/A", "className": "text-center align-middle" },
+                { "data": "employee_position", "render": function (data) { return data ? data.toUpperCase() : "N/A"; }, "className": "text-center align-middle" },
+                {
+                    "data": "id",
+                    "render": function (data, type, row) {
+                        if (!data) return ""; // Prevents errors if ID is missing
+
+                        return `
+                        <div class="rich-list-append">
                         <div class="dropdown">
-                            <span class="dropdown-toggle" data-bs-toggle="dropdown">30 Days <i class="mdi mdi-chevron-down fs-17 align-middle ms-1"></i></span>
+                            <button class="btn btn-sm btn-label-secondary btn-icon" data-bs-toggle="dropdown">
+                                <i class="fa fa-ellipsis-h fs-12"></i>
+                            </button>
                             <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated">
-                                <a class="dropdown-item" href="#">
-                                    <div class="dropdown-icon"><i class="fa fa-poll"></i></div>
-                                    <span class="dropdown-content">Report</span>
+                                <a class="dropdown-item approve-request" href="#" onclick="processRequest('${data}', 'approve')">
+                                    <div class="dropdown-icon"><i class="fa fa-check"></i></div>
+                                    <span class="dropdown-content">Approve</span>
                                 </a>
-                                <a class="dropdown-item" href="#">
-                                    <div class="dropdown-icon"><i class="fa fa-chart-pie"></i></div>
-                                    <span class="dropdown-content">Charts</span>
+                                <a class="dropdown-item reject-request" href="#" onclick="processRequest('${data}', 'reject')">
+                                    <div class="dropdown-icon"><i class="fa fa-times"></i></div>
+                                    <span class="dropdown-content">Reject</span>
                                 </a>
-                                <a class="dropdown-item" href="#">
-                                    <div class="dropdown-icon"><i class="fa fa-chart-line"></i></div>
-                                    <span class="dropdown-content">Statistics</span>
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="#">
-                                    <div class="dropdown-icon"><i class="fa fa-cog"></i></div>
-                                    <span class="dropdown-content">Settings</span>
+                                <a class="dropdown-item abort-request" href="#" onclick="processRequest('${data}', 'abort')">
+                                    <div class="dropdown-icon"><i class="fa fa-ban"></i></div>
+                                    <span class="dropdown-content">Abort</span>
                                 </a>
                             </div>
                         </div>
-                    </div>
-                    <div class="hstack gap-4 justify-content-center pb-3">
-                        <div class="text-center">
-                            <div class="d-flex align-items-center justify-content-center">
-                                <span class="text-info fs-22 me-2"><i class="fas fa-arrow-circle-up"></i></span>
-                                <h4 class="display-6 mb-0">28</h4>
-                            </div>
-                            <p class="text-muted mb-0">Invoice In</p>
-                        </div>
+                    </div>`;
+                    },
+                    "className": "text-center align-middle"
+                }
+            ]
+        });
 
-                        <div class="text-center">
-                            <div class="d-flex align-items-center justify-content-center">
-                                <span class="text-danger fs-22 me-2"><i class="fas fa-arrow-circle-down"></i></span>
-                                <h4 class="display-6 mb-0">32</h4>
-                            </div>
-                            <p class="text-muted mb-0">Invoice Out</p>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            <h5 class="fs-6 mb-0"><i class="fas fa-arrow-circle-up text-info me-2"></i>Invoice 1</h5>
-                            <p class="text-muted mb-0">+1,235</p>
-                        </div>
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            <h5 class="fs-6 mb-0"><i class="fas fa-arrow-circle-down text-danger me-2"></i>Invoice 2</h5>
-                            <p class="text-muted mb-0">-152</p>
-                        </div>
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            <h5 class="fs-6 mb-0"><i class="fas fa-arrow-circle-down text-danger me-2"></i>Invoice 3</h5>
-                            <p class="text-muted mb-0">+13,487</p>
-                        </div>
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            <h5 class="fs-6 mb-0"><i class="fas fa-arrow-circle-up text-info me-2"></i>Invoice 4</h5>
-                            <p class="text-muted mb-0">-1,523</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% comment %} End Transaction History {% endcomment %}
+        // Fix Bootstrap dropdown issue (ensure it works on dynamically added elements)
+        $(document).on('click', '.dropdown-toggle', function (e) {
+            e.stopPropagation(); // Prevent dropdown from closing on click
+            let dropdown = new bootstrap.Dropdown(this);
+            dropdown.toggle();
+        });
 
-        {% comment %} User Feeds {% endcomment %}
-        <div class="col-xl-6">
-            <div class="card" style="height: 416px; overflow: hidden auto;" data-simplebar="init">
-                <div class="card-header card-header-bordered">
-                    <div class="card-icon text-muted"><i class="fa fa-user-tag fs14"></i></div>
-                    <h3 class="card-title">User Feeds</h3>
-                </div>
-                <div class="card-body">
-                    <div class="rich-list rich-list-flush">
-                        <div class="flex-column align-items-stretch">
-                            <div class="rich-list-item">
-                                <div class="rich-list-prepend">
-                                    <div class="avatar avatar-xs">
-                                        <div class=""><img src="{% static 'images/users/avatar-1.png' %}" alt="Avatar image" class="avatar-2xs" /></div>
-                                    </div>
-                                </div>
-                                <div class="rich-list-content">
-                                    <h4 class="rich-list-title mb-1">Airi Satou</h4>
-                                    <p class="rich-list-subtitle mb-0">Accountant</p>
-                                </div>
-                                <div class="rich-list-append"><button class="btn btn-sm btn-label-primary">Follow</button></div>
-                            </div>
-                        </div>
-                        <div class="flex-column align-items-stretch">
-                            <div class="rich-list-item">
-                                <div class="rich-list-prepend">
-                                    <div class="avatar avatar-xs">
-                                        <div class=""><img src="{% static 'images/users/avatar-2.png' %}" alt="Avatar image" class="avatar-2xs" /></div>
-                                    </div>
-                                </div>
-                                <div class="rich-list-content">
-                                    <h4 class="rich-list-title mb-1">Cedric Kelly</h4>
-                                    <p class="rich-list-subtitle mb-0">Senior Developer</p>
-                                </div>
-                                <div class="rich-list-append"><button class="btn btn-sm btn-label-primary">Follow</button></div>
-                            </div>
-                        </div>
-                        <div class="flex-column align-items-stretch">
-                            <div class="rich-list-item">
-                                <div class="rich-list-prepend">
-                                    <div class="avatar avatar-xs">
-                                        <div class=""><img src="{% static 'images/users/avatar-4.png' %}" alt="Avatar image" class="avatar-2xs" /></div>
-                                    </div>
-                                </div>
-                                <div class="rich-list-content">
-                                    <h4 class="rich-list-title mb-1">Brielle Williamson</h4>
-                                    <p class="rich-list-subtitle mb-0">Integration Specialist</p>
-                                </div>
-                                <div class="rich-list-append"><button class="btn btn-sm btn-label-primary">Follow</button></div>
-                            </div>
-                        </div>
-                        <div class="flex-column align-items-stretch">
-                            <div class="rich-list-item">
-                                <div class="rich-list-prepend">
-                                    <div class="avatar avatar-xs">
-                                        <div class=""><img src="{% static 'images/users/avatar-6.png' %}" alt="Avatar image" class="avatar-2xs" /></div>
-                                    </div>
-                                </div>
-                                <div class="rich-list-content">
-                                    <h4 class="rich-list-title mb-1">Sonya Frost</h4>
-                                    <p class="rich-list-subtitle mb-0">Software Engineer</p>
-                                </div>
-                                <div class="rich-list-append"><button class="btn btn-sm btn-label-primary">Follow</button></div>
-                            </div>
-                        </div>
-                        <div class="flex-column align-items-stretch">
-                            <div class="rich-list-item">
-                                <div class="rich-list-prepend">
-                                    <div class="avatar avatar-xs">
-                                        <div class=""><img src="{% static 'images/users/avatar-5.png' %}" alt="Avatar image" class="avatar-2xs" /></div>
-                                    </div>
-                                </div>
-                                <div class="rich-list-content">
-                                    <h4 class="rich-list-title mb-1">Aarya Jeck</h4>
-                                    <p class="rich-list-subtitle mb-0">Developer</p>
-                                </div>
-                                <div class="rich-list-append"><button class="btn btn-sm btn-label-primary">Follow</button></div>
-                            </div>
-                        </div>
-                        <div class="flex-column align-items-stretch">
-                            <div class="rich-list-item">
-                                <div class="rich-list-prepend">
-                                    <div class="avatar avatar-xs">
-                                        <div class=""><img src="{% static 'images/users/avatar-7.png' %}" alt="Avatar image" class="avatar-2xs" /></div>
-                                    </div>
-                                </div>
-                                <div class="rich-list-content">
-                                    <h4 class="rich-list-title mb-1">Saniya Miroja</h4>
-                                    <p class="rich-list-subtitle mb-0">UI-UX Designer</p>
-                                </div>
-                                <div class="rich-list-append"><button class="btn btn-sm btn-label-primary">Follow</button></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% comment %} End User Feeds {% endcomment %}
-    </div>
-    <!-- end row -->
+        // Debugging: Check if data is loaded correctly
+        table.on('xhr', function () {
+            console.log(table.ajax.json()); // Verify API response
+        });
+
+    });
+</script>
+
+
+
 {% endblock %}
 
 

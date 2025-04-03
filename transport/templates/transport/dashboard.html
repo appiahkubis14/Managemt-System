@@ -33,84 +33,405 @@
 {% endblock greeting %}
 
 {% block main_content %}
-<div class="container-fluid d-flex justify-content-center">
-    <div class="col-12">
-        <div class="card w-100" style="max-width: 90vw; overflow: hidden auto;">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <div class="card-icon text-muted"><i class="fas fa-sync-alt fs-14"></i></div>
-                <h3 class="card-title text-center flex-grow-1">Order Progress</h3>
-                <div class="card-addon dropdown">
-                    <button class="btn btn-label-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
-                        <i class="fas fa-filter fs-12 align-middle ms-1"></i>
-                    </button>
-                    <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated">
-                        <a class="dropdown-item" href="#"><i class="fa fa-poll"></i> Today</a>
-                        <a class="dropdown-item" href="#"><i class="fa fa-chart-pie"></i> Yesterday</a>
-                        <a class="dropdown-item" href="#"><i class="fa fa-chart-line"></i> Week</a>
-                    </div>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transport Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <style>
+        body {
+            background-color: #f4f4f4;
+            font-family: Arial, sans-serif;
+        }
+        .dashboard-container {
+            max-width: 1400px;
+            margin: auto;
+            padding: 20px;
+        }
+        .card {
+            border-radius: 10px;
+            padding: 20px;
+            transition: 0.3s;
+            text-align: center;
+        }
+        .card:hover {
+            transform: scale(1.02);
+        }
+        .chart-container {
+            padding: 20px;
+            background: white;
+            border: none;
+            /* border-radius: 10px; */
+        }
+    </style>
+</head>
+<body>
+    
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card bg-danger-subtle" style="background: url('/static/images/dashboard/dashboard-shape-1.png'); background-repeat: no-repeat; background-position: bottom center; "">
+                    <h5>Total Vehicles</h5>
+                    <h3 id="total-vehicles">0</h3>
                 </div>
             </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table text-nowrap mb-0 w-100">
-                        <thead>
-                            <tr class="text-center">
-                                <th>Order ID</th>
-                                <th>Status</th>
-                                <th>Operators</th>
-                                <th>Location</th>
-                                <th>Progress</th>
-                                <th>Start Date</th>
-                                <th>Estimation</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="text-center">
-                                <td>837563</td>
-                                <td><i class="marker marker-dot text-primary"></i> Arrived</td>
-                                <td>
-                                    <div class="avatar-group">
-                                        <img src="{% static 'images/users/avatar-1.png' %}" class="avatar-2xs">
-                                        <img src="{% static 'images/users/avatar-2.png' %}" class="avatar-2xs">
-                                        <img src="{% static 'images/users/avatar-3.png' %}" class="avatar-2xs">
-                                    </div>
-                                </td>
-                                <td>Tokyo</td>
-                                <td>
-                                    <h6>90%</h6>
-                                    <div class="progress progress-sm">
-                                        <div class="progress-bar bg-primary" style="width: 90%"></div>
-                                    </div>
-                                </td>
-                                <td>26/06/2023</td>
-                                <td>27/06/2023</td>
-                            </tr>
-                            <tr class="text-center">
-                                <td>982365</td>
-                                <td><i class="marker marker-dot text-danger"></i> Pending</td>
-                                <td>
-                                    <div class="avatar-group">
-                                        <img src="{% static 'images/users/avatar-6.png' %}" class="avatar-2xs">
-                                        <img src="{% static 'images/users/avatar-7.png' %}" class="avatar-2xs">
-                                    </div>
-                                </td>
-                                <td>San Francisco</td>
-                                <td>
-                                    <h6>20%</h6>
-                                    <div class="progress progress-sm">
-                                        <div class="progress-bar bg-primary" style="width: 20%"></div>
-                                    </div>
-                                </td>
-                                <td>23/04/2023</td>
-                                <td>28/04/2023</td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <div class="col-md-3">
+                <div class="card bg-info-subtle" style="background: url('/static/images/dashboard/dashboard-shape-1.png'); background-repeat: no-repeat; background-position: bottom center; ">
+                    <h5>Total Drivers</h5>
+                    <h3 id="total-drivers">0</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success-subtle" style="background: url('/static/images/dashboard/dashboard-shape-1.png'); background-repeat: no-repeat; background-position: bottom center; ">
+                    <h5>Active Assignments</h5>
+                    <h3 id="total-assignments">0</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-primary-subtle" style="background: url('/static/images/dashboard/dashboard-shape-1.png'); background-repeat: no-repeat; background-position: bottom center; ">
+                    <h5>Maintenance Requests</h5>
+                    <h3 id="maintenance-requests">0</h3>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Charts Section -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="chart-container" style="width: 610x;height: 450px;display: flex;justify-content: center;align-items: center;flex-direction: column;" >
+                    <h5>Vehicle Status Overview</h5>
+                    <canvas id="vehicleStatusChart"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-container" style="width: 610x;height: 450px;display: flex;justify-content: center;align-items: center;flex-direction: column;" >
+                    <h5>Maintenance Requests Overview</h5>
+                    <canvas id="maintenanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    
+        <br>
+    
+        <div class="row">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h5>Dispatch Requests Overview</h5>
+                    <canvas id="dispatchChart"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h5>Top 5 Most Used Vehicles</h5>
+                    <ul id="top-vehicles" class="list-group"></ul>
                 </div>
             </div>
         </div>
     </div>
-</div>
+    <br>
+    <br>
+    <div class="card-body">
+        <div class="table-responsive-md">
+            <table class="table text-nowrap mb-0">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Status</th>
+                        <th>Operators</th>
+                        <th>Location</th>
+                        <th>Progress</th>
+                        <th>Start date</th>
+                        <th>Estimation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="align-middle">837563</td>
+                        <td class="align-middle"><i class="marker marker-dot m-0 me-2 text-primary"></i> Arrived</td>
+                        <td class="align-middle">
+                            <div class="avatar-group">
+                                <div class="avatar avatar-circle">
+                                    <img src="{% static 'images/users/avatar-1.png' %}" alt="Avatar image" class="avatar-2xs">
+                                </div>
+                                <div class="avatar avatar-circle">
+                                    <img src="{% static 'images/users/avatar-2.png' %}" alt="Avatar image" class="avatar-2xs">
+                                </div>
+                                <div class="avatar avatar-circle">
+                                    <img src="{% static 'images/users/avatar-3.png' %}" alt="Avatar image" class="avatar-2xs">
+                                </div>
+                                <div class="avatar avatar-circle">
+                                    <img src="{% static 'images/users/avatar-4.png' %}" alt="Avatar image" class="avatar-2xs">
+                                </div>
+                                <div class="avatar avatar-circle">
+                                    <img src="{% static 'images/users/avatar-5.png' %}" alt="Avatar image" class="avatar-2xs">
+                                </div>
+                            </div>
+                        </td>
+                        <td class="align-middle">Tokyo</td>
+                        <td class="align-middle">
+                            <div class="">
+                                <h6 class="">90%</h6>
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-primary" style="width: 90%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="align-middle">26/06/2023</td>
+                        <td class="align-middle">27/06/2023</td>
+                    </tr>
+                    <tr>
+                        <td class="align-middle">982365</td>
+                        <td class="align-middle"><i class="marker marker-dot m-0 me-2 text-danger"></i> Pending</td>
+                        <td class="align-middle">
+                            <div class="avatar-group">
+                                <div class="avatar avatar-circle">
+                                    <img src="{% static 'images/users/avatar-6.png' %}" alt="Avatar image" class="avatar-2xs">
+                                </div>
+                                <div class="avatar avatar-circle">
+                                    <img src="{% static 'images/users/avatar-7.png' %}" alt="Avatar image" class="avatar-2xs">
+                                </div>
+                                <div class="avatar avatar-circle">
+                                    <img src="{% static 'images/users/avatar-8.png' %}" alt="Avatar image" class="avatar-2xs">
+                                </div>
+                            </div>
+                        </td>
+                        <td class="align-middle">San Francisco</td>
+                        <td class="align-middle">
+                            <div class="">
+                                <h6 class="">20%</h6>
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-primary" style="width: 20%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="align-middle">23/04/2023</td>
+                        <td class="align-middle">28/04/2023</td>
+                    </tr>
+                    <tr>
+                        <td class="align-middle">872048</td>
+                        <td class="align-middle"><i class="marker marker-dot m-0 me-2 text-success"></i> Moving</td>
+                        <td class="align-middle">
+                            <div class="avatar-group">
+                                <div class="avatar avatar-circle">
+                                    <img src="{% static 'images/users/avatar-5.png' %}" alt="Avatar image" class="avatar-2xs">
+                                </div>
+                                <div class="avatar avatar-circle">
+                                    <img src="{% static 'images/users/avatar-4.png' %}" alt="Avatar image" class="avatar-2xs">
+                                </div>
+                                <div class="avatar avatar-circle">
+                                    <img src="{% static 'images/users/avatar-1.png' %}" alt="Avatar image" class="avatar-2xs">
+                                </div>
+                                <div class="avatar avatar-circle">
+                                    <img src="{% static 'images/users/avatar-2.png' %}" alt="Avatar image" class="avatar-2xs">
+                                </div>
+                            </div>
+                        </td>
+                        <td class="align-middle">Edinburgh</td>
+                        <td class="align-middle">
+                            <div class="">
+                                <h6 class="">75%</h6>
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-primary" style="width: 75%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="align-middle">26/04/2023</td>
+                        <td class="align-middle">30/04/2023</td>
+                    </tr>
+                    <tr>
+                        <td class="align-middle">324712</td>
+                        <td class="align-middle"><i class="marker marker-dot m-0 me-2 text-warning"></i> Hold</td>
+                        <td class="align-middle">
+                            <div class="avatar-group">
+                                <div class="avatar avatar-circle">
+                                    <img src="{% static 'images/users/avatar-3.png' %}" alt="Avatar image" class="avatar-2xs">
+                                </div>
+                                <div class="avatar avatar-circle">
+                                    <img src="{% static 'images/users/avatar-4.png' %}" alt="Avatar image" class="avatar-2xs">
+                                </div>
+                                <div class="avatar avatar-circle">
+                                    <img src="{% static 'images/users/avatar-5.png' %}" alt="Avatar image" class="avatar-2xs">
+                                </div>
+                            </div>
+                        </td>
+                        <td class="align-middle">Tokyo</td>
+                        <td class="align-middle">
+                            <div class="">
+                                <h6 class="">30%</h6>
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-primary" style="width: 30%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="align-middle">26/06/2023</td>
+                        <td class="align-middle">30/06/2023</td>
+                    </tr>
+                    <tr>
+                        <td class="align-middle">128747</td>
+                        <td class="align-middle"><i class="marker marker-dot m-0 me-2 text-success"></i> Moving</td>
+                        <td class="align-middle">
+                            <div class="avatar-group">
+                                <div class="avatar avatar-circle">
+                                    <img src="{% static 'images/users/avatar-6.png' %}" alt="Avatar image" class="avatar-2xs">
+                                </div>
+                                <div class="avatar avatar-circle">
+                                    <img src="{% static 'images/users/avatar-7.png' %}" alt="Avatar image" class="avatar-2xs">
+                                </div>
+                                <div class="avatar avatar-circle">
+                                    <img src="{% static 'images/users/avatar-8.png' %}" alt="Avatar image" class="avatar-2xs">
+                                </div>
+                                <div class="avatar avatar-circle">
+                                    <img src="{% static 'images/users/avatar-5.png' %}" alt="Avatar image" class="avatar-2xs">
+                                </div>
+                            </div>
+                        </td>
+                        <td class="align-middle">New York</td>
+                        <td class="align-middle">
+                            <div class="">
+                                <h6 class="">60%</h6>
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-primary" style="width: 60%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="align-middle">10/05/2023</td>
+                        <td class="align-middle">15/05/2023</td>
+                    </tr>
+                    <tr>
+                        <td class="align-middle">415423</td>
+                        <td class="align-middle"><i class="marker marker-dot m-0 me-2 text-danger"></i> Pending</td>
+                        <td class="align-middle">
+                            <div class="avatar-group">
+                                <div class="avatar avatar-circle">
+                                    <img src="{% static 'images/users/avatar-2.png' %}" alt="Avatar image" class="avatar-2xs">
+                                </div>
+                                <div class="avatar avatar-circle">
+                                    <img src="{% static 'images/users/avatar-6.png' %}" alt="Avatar image" class="avatar-2xs">
+                                </div>
+                            </div>
+                        </td>
+                        <td class="align-middle">London</td>
+                        <td class="align-middle">
+                            <div class="">
+                                <h6 class="">72%</h6>
+                                <div class="progress progress-sm">
+                                    <div class="progress-bar bg-primary" style="width: 72%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="align-middle">05/06/2023</td>
+                        <td class="align-middle">26/06/2023</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- JavaScript for Fetching Data and Rendering Charts -->
+    <script>
+        function fetchTransportData() {
+    fetch('/transport/data/')
+        .then(response => response.json())
+        .then(data => {
+            // Update total values
+            document.getElementById("total-vehicles").innerText = data.total_vehicles;
+            document.getElementById("total-drivers").innerText = data.total_drivers;
+            document.getElementById("total-assignments").innerText = data.total_assignments;
+            document.getElementById("maintenance-requests").innerText = data.maintenance_requests.reduce((acc, curr) => acc + curr.count, 0);
+
+            // Update charts
+            updateChart(vehicleStatusChart, data.vehicle_status);
+            updateChart(maintenanceChart, data.maintenance_requests);
+            updateChart(dispatchChart, data.dispatch_requests);
+
+            // Update Top Vehicles List with more details
+            let vehicleList = "";
+            data.top_vehicles.forEach(vehicle => {
+                vehicleList += `
+                    <li class="list-group-item">
+                        <strong>License Plate:</strong> ${vehicle.assigned_vehicle__license_plate} <br>
+                        <strong>Status:</strong> ${vehicle.assigned_vehicle__status} <br>
+                        <strong>Last Assigned:</strong> ${vehicle.assigned_vehicle__last_assigned} <br>
+                        <strong>Times Assigned:</strong> ${vehicle.count} times
+                    </li>
+                `;
+            });
+            document.getElementById("top-vehicles").innerHTML = vehicleList;
+        })
+        .catch(error => console.error('Error fetching data:', error));
+}
+    
+        function updateChart(chart, data) {
+            chart.data.labels = data.map(item => item.status);
+            chart.data.datasets[0].data = data.map(item => item.count);
+            chart.update();
+        }
+    
+        // Initialize Charts
+        let ctx1 = document.getElementById('vehicleStatusChart').getContext('2d');
+        let vehicleStatusChart = new Chart(ctx1, {
+            type: 'doughnut',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Vehicle Status',
+                    data: [],
+                    backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545'],
+                    borderWidth: 1
+                }]
+            },
+            options: { responsive: true }
+        });
+    
+        let ctx2 = document.getElementById('maintenanceChart').getContext('2d');
+        let maintenanceChart = new Chart(ctx2, {
+            type: 'line', // Change to line chart (area chart)
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Maintenance Requests',
+                    data: [],
+                    fill: true, // Fill the area below the line
+                    backgroundColor: 'rgba(23, 162, 184, 0.2)', // Transparent blue
+                    borderColor: '#17a2b8', // Border color
+                    borderWidth: 2,
+                    tension: 0.4 // Smooth curve effect
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+    
+        let ctx3 = document.getElementById('dispatchChart').getContext('2d');
+        let dispatchChart = new Chart(ctx3, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Dispatch Requests',
+                    data: [],
+                    backgroundColor: ['#6610f2', '#20c997', '#e0a800', '#dc3545'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    
+        // Load Data on Page Load
+        document.addEventListener("DOMContentLoaded", fetchTransportData);
+    </script>
+    
+</body>
+
 
         {% endblock %}
 
@@ -155,3 +476,19 @@
 {% block vis_charts %}
     {% include 'partials/charts_vis.html' %}
 {% endblock %} 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

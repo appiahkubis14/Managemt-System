@@ -2,12 +2,26 @@ from .views import *
 from django.urls import path
 
 urlpatterns = [
-    path("inventory-dashboard/", inventory_view, name="inventory_dashboard"),
-    # path("add-item/", add_item, name="add_item"),
+    # path("dashboard/", inventory_dashboard_view, name="inventory_dashboard"),
     path("view-inventories/", inventory_view, name="view_inventories"),
-    # path("update-item/<str:id>/", update_item, name="update_item"),
-    # path("delete-item/<str:id>/", delete_item, name="delete_item"),
-    # path("export/", export_inventory_csv, name="export_inventory_csv"),
-    # path("import/", import_inventory, name="import_inventory"),
-    
+    path("requested-inventory/", requested_inventory , name="inventory-request") ,
+    path("all-request-inventory/", get_inventory_requests , name="request-inventory") ,
+    path('create/', create_inventory, name='create_inventory'),
+    path('update/<int:id>/', update_inventory, name='update_inventory'),
+    path('delete/<int:id>/', delete_inventory, name='delete_inventory'),
+
+    path("request-inventory/update/<str:id>/", update_transaction_type,name='update_inventory_request'),
+    path("inventory-request/<int:id>/<str:action>/", process_request, name="process_request"),
+
+
+
+    path('inventory-items/', inventory_items, name='inventory_items'),
+    path('process-request/<int:id>/<str:action>/', process_request, name='process_request'),
+
+    path('api/request-inventory/', add_inventory_request, name='add-inventory-request'),
+    path('update-request-inventory/', update_inventory_request, name='update-inventory-request'),
+    path('delete-request-inventory/', delete_inventory_request, name='delete-inventory-request'),
+
+    path("bulk/",BulkInventoryCreateView.as_view(),name='bulk')
 ]
+    

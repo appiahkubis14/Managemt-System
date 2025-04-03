@@ -10,12 +10,13 @@ from employees.views import *
 urlpatterns = [
     path('login/', auth_views.LoginView.as_view(template_name="account/login.html"), name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
+    path('dashboard/employees/', employee_list, name='employee_list'),
     path("dashboard/home/", dashboard_view, name="dashboard_home"),
     path("dashboard/transport/", transport_view, name="dashboard_transport"),
-    path("dashboard/inventory/", inventory_view, name="dashboard_inventory"),
+    path("dashboard/inventory/", inventory_dashboard_view, name="dashboard_inventory"),
     path("dashboard/warehouse/", warehouse_view, name="dashboard_warehouse"),
     path("dashboard/tracking/", tracking_view, name="dashboard_tracking"),
-    path('dashboard/employees/', employee_list, name='employee_list'),
+    
 
 ]
 

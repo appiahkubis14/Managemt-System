@@ -1,0 +1,79 @@
+<link rel="stylesheet" href="{% static 'backend/assets/css/datatables.min.css' %}" />
+<link rel="stylesheet" href="{% static 'backend/assets/css/datatables.css' %}" />
+<link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.css">
+
+<table id="farmsTbl" class="datatable table-stripped display" style="width:100%">
+    <thead>
+        <tr>
+            <th>Farm ID</th>
+            <th>Society</th>
+            <th>Farm Size</th>
+            <th>Coordinate</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        
+    </tbody>
+</table>
+
+<script src="{% static 'backend/assets/js/datatables.js' %}"></script>
+<script src="{% static 'backend/assets/js/datatables.min.js' %}"></script>
+
+const columnData = [
+    { 
+        data: "farm_codes", 
+    },
+    { data: "society_na"},
+    { data: "farm_area"},
+    { 
+        data: "shape_leng",
+        render: (data, type, row) => {
+            if(data){
+                return `(${row.shape_leng}, ${row.shape_area})`
+            }
+            return ''
+        }
+    },
+    { 
+        data: "shape_area" ,
+        render: (data, type, row) => {
+            return ""
+        }
+    },
+]
+
+    
+document.body.onload = () => {
+    let currentPage = 1;
+    const urlPath = document.location;
+    const farmQueryKey = urlPath.pathname.split("/")
+    
+    let farmsData = new DataTable('#farmsTbl', {
+        
+        serverSide: true,
+        ajax: {
+            url: `${urlPath.origin}/datatable/farms/?page=${currentPage}`,
+            
+            type: 'GET',
+            dataSrc: (json)=>{
+                console.log(json.data);
+                return json.data
+            }
+        },
+        layout: {
+            topStart: {
+                buttons: ["copy", "csv", "excel"]
+            }
+        },
+        columns: columnData,
+        pageLength: 25,
+        searching: true,
+        ordering: true,
+        paging: true,
+        processing: true,
+        autoWidth: false,
+        responsive: true,
+        stateSave: true
+    })
+}

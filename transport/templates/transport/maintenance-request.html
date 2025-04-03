@@ -3,6 +3,57 @@
 {% load custom_filters %}
 
 {% block add_new %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="card-title">Maintenance Request Overview</h4>
+                <div class="mb-3">
+                    <!-- Export Button -->
+                    <!-- <a href="{% url 'export_vehicles' %}" class="btn btn-primary me-2">
+                        <i class="fas fa-file-export"></i> Export
+                    </a> -->
+                
+                    <!-- Import Button with Modal -->
+                    <!-- <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#importVehicleModal">
+                        <i class="fas fa-file-import"></i> Import
+                    </button> -->
+                
+                    <!-- Add Vehicle Button -->
+                    <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#addVehicleModal">
+                        <i class="fas fa-plus-circle"></i> Add Maintenance Request
+                    </button>
+                </div>
+                
+                <!-- Import Vehicle Modal -->
+                <div class="modal fade" id="importVehicleModal" tabindex="-1" aria-labelledby="importVehicleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Import Vehicles</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form action="{% url 'import_vehicles' %}" method="POST" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label for="csvFile" class="form-label">Upload CSV File</label>
+                                        <input type="file" name="csv_file" class="form-control" id="csvFile" required>
+                                    </div>
+                                    <div class="text-end">
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-upload"></i> Upload
+                                        </button>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                            <i class="fas fa-times"></i> Cancel
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
 <!-- Add Dispatch Request Modal -->
 <div class="modal fade" id="addVehicleModal" tabindex="-1" aria-labelledby="addMaintenanceModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -13,7 +64,7 @@
             </div>
 
             <div class="modal-body">
-                <form method="POST" enctype="multipart/form-data" id="addMaintenanceForm" action="/transport/maintenance/create/">
+                <form method="POST" enctype="multipart/form-data" id="addMaintenanceForm">
                     {% csrf_token %}
                     
                     <div class="row">
@@ -82,123 +133,670 @@
 {% block content %}
 <div class="card-body">
     <div class="">
-        <table id="dispatchTable" class="table table-striped table-bordered datatable">
-            <thead class="table-dark">
+        <table id="maintenanceTable" class="table table-striped table-bordered">
+            <thead class="">
                 <tr>
-                    <th>Vehicle</th>
-                    <th>License Plate</th>
-                    <th>Requested By</th>
-                    <th>Category</th>
-                    <th>Description</th>
-                    <th>Status</th>
-                    <th>Image</th>
-                    <th>Created At</th>
-                    <th>Updated At</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for request in maintenance_requests %}
-                <tr id="maintenanceRow{{ request.id }}">
-                    <td>{{ request.vehicle.vehicle_type }}</td>
-                    <td>{{ request.vehicle.license_plate }}</td>
-                    <td>{{ request.requested_by }}</td>
-                    <td>{{ request.get_category_display }}</td>
-                    <td>{{ request.description }}</td>
-                    <td>
-                        {% if request.status == 'pending' %}
-                            <span class="badge bg-secondary">Pending</span>
-                        {% elif request.status == 'approved' %}
-                            <span class="badge bg-primary">Approved</span>
-                        {% elif request.status == 'completed' %}
-                            <span class="badge bg-success">Completed</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if request.vehicle.vehicle_image %}
-                            <a href="#" data-bs-toggle="modal" data-bs-target="#imageModal{{ request.vehicle.id }}">
-                                <img src="{{ request.vehicle.vehicle_image.url }}" alt="Vehicle Image" class="img-thumbnail" width="30">
-                            </a>
-                            <div class="modal fade" id="imageModal{{ request.vehicle.id }}" tabindex="-1" aria-hidden="true">
-                                <div class="modal-dialog modal-dialog-centered">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">Vehicle Image</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                        </div>
-                                        <div class="modal-body text-center">
-                                            <img src="{{ request.vehicle.vehicle_image.url }}" alt="Full Size Vehicle Image" class="img-fluid">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        {% else %}
-                            <span class="text-muted">No Image</span>
-                        {% endif %}
-                    </td>
-                    
-                    <td>{{ request.created_at|date:"Y-m-d H:i" }}</td>
-                    <td>{{ request.updated_at|date:"Y-m-d H:i" }}</td>
-                    <td>
-                        <div class="dropdown">
-                            <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item edit-maintenance" href="#" data-bs-toggle="modal" 
-                                       data-bs-target="#editModal{{ request.id }}" data-id="{{ request.id }}">
-                                        Edit
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item text-danger delete-maintenance" href="#" onclick="">
-                                        Delete
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </td>
+                    <th>ID</th>
+                    <th>VEHICLE</th>
+                    <th>REQUESTED BY</th>
+                    <th>CATEGORY</th>
+                    <th>DESCRIPTION</th>
+                    <th>STATUS</th>
+                    <th>REQUEST DATE</th>
+                    <!-- <th>UPDATED AT</th> -->
+                    <th>ACTIONS</th>
                 </tr>
                 
-
-                <!-- Edit Dispatch Modal -->
-                <div class="modal fade" id="editModal{{ dispatch.id }}" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Edit Dispatch Request</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            <div class="modal-body">
-                                <form id="editDispatchForm{{ dispatch.id }}" action="" method="POST">
-                                    {% csrf_token %}
-                                    <div class="mb-3">
-                                        <label class="form-label">Status</label>
-                                        <select name="status" class="form-control">
-                                            <option value="pending" {% if dispatch.status == 'pending' %}selected{% endif %}>Pending</option>
-                                            <option value="approved" {% if dispatch.status == 'approved' %}selected{% endif %}>Approved</option>
-                                            <option value="dispatched" {% if dispatch.status == 'dispatched' %}selected{% endif %}>Dispatched</option>
-                                            <option value="completed" {% if dispatch.status == 'completed' %}selected{% endif %}>Completed</option>
-                                        </select>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">Trip Log</label>
-                                        <textarea class="form-control" name="trip_log">{{ dispatch.trip_log }}</textarea>
-                                    </div>
-                                    <button type="submit" class="btn btn-primary">Save Changes</button>
-                                </form>
-                            </div>
-                        </div>
+            </thead>
+        </table>
+        
+        <!-- Add/Edit Modal -->
+        <div id="maintenanceModal" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Maintenance Request</h5>
+                        <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="maintenanceForm">
+                            <input type="hidden" id="request_id">
+                            
+                            <label>Vehicle</label>
+                            <select id="vehicle" class="form-control"></select>
+        
+                            <label>Requested By</label>
+                            <input type="text" id="requested_by" class="form-control">
+        
+                            <label>Category</label>
+                            <select id="category" class="form-control">
+                                <option value="general">General</option>
+                                <option value="accident">Accident</option>
+                            </select>
+        
+                            <label>Description</label>
+                            <textarea id="description" class="form-control"></textarea>
+        
+                            <label>Status</label>
+                            <select id="status" class="form-control">
+                                <option value="pending">Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="completed">Completed</option>
+                            </select>
+        
+                            <button type="submit" class="btn btn-success mt-3">Save</button>
+                        </form>
                     </div>
                 </div>
-                {% empty %}
-                <tr>
-                    <td colspan="8" class="text-center text-muted">No dispatch requests found.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+            </div>
+        </div>
+                
     </div>
-</div>
+
+    <div class="modal fade" id="addInventoryRequestModal" tabindex="-1" aria-labelledby="addInventoryRequestModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addInventoryRequestModalLabel">Request Inventory Item</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" enctype="multipart/form-data" id="addInventoryRequestForm" >
+                        {% csrf_token %}
+                        <div class="row">
+                            <!-- Inventory Item -->
+                            <div class="col-md-6 position-relative">
+                                <label class="form-label">Inventory Item</label>
+                                <input type="text" id="searchInput" class="form-control" placeholder="Search Inventory..." onkeyup="filterFunction()">
+                                <div id="dropdownList" class="dropdown-menu w-100">
+                                    {% for item in inventories|slice:":10" %} 
+                                    <a href="#" class="dropdown-item" 
+                                       data-id="{{ item.id }}" 
+                                       data-category="{{ item.get_category_display }}" 
+                                       data-description="{{ item.description }}" 
+                                       data-quantity="{{ item.quantity }}"
+                                       onclick="selectItem(this)">
+                                        {{ item.name }}
+                                    </a>
+                                    {% endfor %}
+                                </div>
+                                <input type="hidden" name="inventory_item" id="selectedInventoryItem">
+                            </div>
+                            
+                            <!-- Category (Auto-filled) -->
+                            <div class="col-md-6">
+                                <label class="form-label">Category</label>
+                                <input type="text" id="category" class="form-control" readonly>
+                            </div>
+                            <!-- Description (Auto-filled) -->
+                            <div class="col-md-6">
+                                <label class="form-label">Description</label>
+                                <textarea id="description" class="form-control" readonly></textarea>
+                            </div>
+                            <!-- Available Quantity (Auto-filled) -->
+                            <div class="col-md-6">
+                                <label class="form-label">Available Quantity</label>
+                                <input type="number" id="available_quantity" class="form-control" readonly>
+                            </div>
+                            <!-- Requested Quantity -->
+                            <div class="col-md-6">
+                                <label class="form-label">Requested Quantity</label>
+                                <input type="number" name="requested_quantity" class="form-control" required>
+                            </div>
+                            <!-- From Department -->
+                            <div class="col-md-6">
+                                <label class="form-label">From</label>
+                                <select name="from_department" class="form-control" required>
+                                    <option value="">Select Department</option>
+                                    {% for department in departments %}
+                                    <option value="{{ department.id }}">{{ department.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <!-- To Department -->
+                            <div class="col-md-6">
+                                <label class="form-label">Department</label>
+                                <select name="to_department" class="form-control">
+                                    <option value="">Select Department</option>
+                                    {% for department in departments %}
+                                    <option value="{{ department.id }}">{{ department.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <!-- Employee Name -->
+                            <div class="col-md-6">
+                                <label class="form-label">Employee Name</label>
+                                <select name="employee" id="employee" class="form-control" required>
+                                    <option value="">Select Employee</option>
+                                    {% for emp in employees %}
+                                    <option value="{{ emp.id }}" 
+                                            data-phone="{{ emp.phone }}"
+                                            data-gender="{{ emp.gender }}"
+                                            data-position="{{ emp.position }}"
+                                            data-ghcard="{{ emp.ghana_card }}">
+                                        {{ emp.employee_name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <!-- Employee Phone (Auto-filled) -->
+                            <div class="col-md-6">
+                                <label class="form-label">Employee Phone</label>
+                                <input type="text" id="employee_phone" class="form-control" readonly>
+                            </div>
+                            <!-- Gender (Auto-filled) -->
+                            <div class="col-md-6">
+                                <label class="form-label">Gender</label>
+                                <input type="text" id="employee_gender" class="form-control" readonly>
+                            </div>
+                            <!-- Ghana Card Number (Auto-filled) -->
+                            <div class="col-md-6">
+                                <label class="form-label">Ghana Card Number</label>
+                                <input type="text" id="ghana_card" class="form-control" readonly>
+                            </div>
+                            <!-- Position (Auto-filled) -->
+                            <div class="col-md-6">
+                                <label class="form-label">Position</label>
+                                <input type="text" id="employee_position" class="form-control" readonly>
+                            </div>
+                            <!-- Transaction Status -->
+                            <div class="col-md-6">
+                                <label class="form-label">Transaction Status</label>
+                                <select name="transaction_type" class="form-control" required>
+                                    <option value="pending">Pending</option>
+                                    <option value="approved">Approved</option>
+                                    <option value="rejected">Rejected</option>
+                                </select>
+                            </div>
+                            <div class="mb-3 row">
+                                <div class="col-md-6">
+                                    <label for="vehicleLicense" class="form-label">Vehicle License Plate</label>
+                                    <input type="text" class="form-control" id="vehicleLicense" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="vehicleModel" class="form-label">Vehicle Model</label>
+                                    <input type="text" class="form-control" id="vehicleModel" readonly>
+                                </div>
+                            </div>
+                            <div class="mb-3 row">
+                                <div class="col-md-6">
+                                    <label for="vehicleMake" class="form-label">Vehicle Make</label>
+                                    <input type="text" class="form-control" id="vehicleMake" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="remarks" class="form-label">Remarks</label>
+                                    <textarea class="form-control" id="remarks" rows="3"></textarea>
+                                </div>
+                               
+                            </div>
+                           
+                            
+                        </div>
+                        <div class="text-end mt-3" style="display: flex;justify-content: center;align-items: center;gap: 15px;">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Submit Request
+                            </button>
+                            <!-- <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="fas fa-times"></i> Cancel
+                            </button> -->
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-fill inventory details
+        document.getElementById("inventory_item").addEventListener("change", function() {
+            let selected = this.options[this.selectedIndex];
+            console.log(selected);
+            document.getElementById("category").value = selected.getAttribute("data-category");
+            document.getElementById("description").value = selected.getAttribute("data-description");
+            document.getElementById("available_quantity").value = selected.getAttribute("data-quantity");
+        });
+
+        
+        
+        // Auto-fill employee details
+        document.getElementById("employee").addEventListener("change", function() {
+            let selected = this.options[this.selectedIndex];
+            document.getElementById("employee_phone").value = selected.getAttribute("data-phone");
+            document.getElementById("employee_gender").value = selected.getAttribute("data-gender");
+            document.getElementById("ghana_card").value = selected.getAttribute("data-ghcard");
+            document.getElementById("employee_position").value = selected.getAttribute("data-position");
+        });
+        </script>
+
+
+ <!-- Include DataTables and jQuery -->
+ <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+ <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.dataTables.min.css">
+
+ <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+ <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js"></script>
+
+ <!-- Export & Import Scripts -->
+ <script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+ <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
+ <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
+ <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.colVis.min.js"></script>
+
+ <script>
+    
+
+document.addEventListener("DOMContentLoaded", function () {
+    let searchInput = document.getElementById("searchInput");
+    let dropdownList = document.getElementById("dropdownList");
+    let selectedInventoryItem = document.getElementById("selectedInventoryItem");
+    let categoryField = document.getElementById("category");
+    let descriptionField = document.getElementById("description");
+    let quantityField = document.getElementById("available_quantity");
+
+    // Show dropdown on focus
+    searchInput.addEventListener("focus", function () {
+        dropdownList.classList.add("show");
+    });
+
+    // Hide dropdown when clicking outside
+    document.addEventListener("click", function (event) {
+        if (!searchInput.contains(event.target) && !dropdownList.contains(event.target)) {
+            dropdownList.classList.remove("show");
+        }
+    });
+
+    // Filter function for searching inventory
+    searchInput.addEventListener("keyup", function () {
+        let filter = searchInput.value.toLowerCase();
+        let items = dropdownList.querySelectorAll(".dropdown-item");
+        items.forEach(item => {
+            let text = item.textContent.toLowerCase();
+            item.style.display = text.includes(filter) ? "" : "none";
+        });
+    });
+
+    // Function to select an inventory item
+    function selectItem(element) {
+        searchInput.value = element.textContent; // Set input field
+        selectedInventoryItem.value = element.getAttribute("data-id"); // Store item ID
+
+        // Autofill other fields
+        categoryField.value = element.getAttribute("data-category");
+        descriptionField.value = element.getAttribute("data-description");
+        quantityField.value = element.getAttribute("data-quantity");
+
+        dropdownList.classList.remove("show"); // Hide dropdown
+    }
+
+    // Attach click event to each dropdown item
+    document.querySelectorAll(".dropdown-item").forEach(item => {
+        item.addEventListener("click", function (event) {
+            event.preventDefault(); // Prevent link action
+            selectItem(this);
+        });
+    });
+});
+
+
+    $(document).ready(function () {
+    const table = $("#maintenanceTable").DataTable({
+        paging: true,
+        searching: true,
+        ordering: true,
+        info: true,
+        responsive: true,
+        autoWidth: false,
+        processing: true,
+        serverSide: false,
+        ajax: {
+            url: "/transport/get-maintenance-requests/",
+            type: "GET",
+            dataSrc: "data"
+        },
+        columns: [
+            { data: "id" },
+            { data: "vehicle__license_plate", render: (data) => data ? data.toUpperCase() : "" },
+            { data: "requested_by", render: (data) => data ? data.toUpperCase() : "" },
+            { data: "category", render: (data) => data ? data.toUpperCase() : "" },
+            { data: "description", render: (data) => data ? data.toUpperCase() : "" },
+            { data: "status", render: (data) => data ? data.toUpperCase() : "" },
+            { data: "created_at", render: (data) => data ? data.toUpperCase() : "" },
+            {
+                data: "id",
+                render: function (data) {
+                    return `
+                        <div style="display: flex; justify-content: center; align-items: center; gap: 3px;">
+                            
+                            <button class="btn btn-info btn-sm request-btn" data-bs-toggle="modal" data-bs-target=#addInventoryRequestModal{{data}} data-id="${data}">REQUEST INVENTORY</button>
+                            <button class="btn btn-danger btn-sm delete-btn" data-id="${data}">DELETE</button>
+                        </div>
+                    `;
+                }
+            }
+        ],
+        lengthMenu: [10, 25, 50, 100],
+        pageLength: 10,
+        dom: 'Bfrtip',
+        buttons: [
+            { extend: "excel", text: '<i class="fas fa-file-excel"></i> Excel', className: "btn btn-success" },
+            { extend: "csv", text: '<i class="fas fa-file-csv"></i> CSV', className: "btn btn-info" },
+            { extend: "pdf", text: '<i class="fas fa-file-pdf"></i> PDF', className: "btn btn-danger" },
+            { extend: "print", text: '<i class="fas fa-print"></i> Print', className: "btn btn-secondary" },
+            { extend: "copy", text: '<i class="fas fa-copy"></i> Copy', className: "btn btn-primary" }
+        ],
+        order: [[0, "desc"]]
+    });
+
+    
+
+
+    $(".request-btn").on("click", function() {
+        // Get vehicle data from the button's data attributes
+        let vehicleLicense = $(this).data("license");
+        let vehicleModel = $(this).data("model");
+        let vehicleMake = $(this).data("make");
+
+        // Autofill the modal fields
+        $("#vehicleLicense").val(vehicleLicense);
+        $("#vehicleModel").val(vehicleModel);
+        $("#vehicleMake").val(vehicleMake);
+    });
+
+    // Handle form submission (you can adjust this part to your needs)
+    $("#inventoryRequestForm").submit(function(e) {
+        e.preventDefault();
+
+        // Collect form data and send it to the server
+        let formData = {
+            vehicle_license: $("#vehicleLicense").val(),
+            vehicle_model: $("#vehicleModel").val(),
+            vehicle_make: $("#vehicleMake").val(),
+            item_requested: $("#itemRequested").val(),
+            quantity_requested: $("#quantityRequested").val(),
+            remarks: $("#remarks").val()
+        };
+
+        $.ajax({
+            url: "/transport/api/vehicles/",
+            type: "POST",
+            data: formData,
+            success: function(response) {
+                alert("Inventory request submitted successfully!");
+                $("#addInventoryRequestModal").modal("hide");
+            },
+            error: function(xhr) {
+                alert("Error: " + xhr.responseText);
+            }
+        });
+    });
+
+    // Open Inventory Request Modal
+    $(".request-btn").on("click", function () {
+        $("#addInventoryRequestModal").modal("show");
+    });
+
+    // Create Maintenance Request
+    $("#addMaintenanceForm").submit(function (e) {
+        e.preventDefault();
+        let formData = new FormData(this);
+
+        $.ajax({
+            url: "/transport/create-new-maintenance-request/",
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: { "X-CSRFToken": getCookie("csrftoken") },
+            success: function (response) {
+                alert(response.message);
+                $("#addVehicleModal").modal("hide");
+                $("#addMaintenanceForm")[0].reset();
+                table.ajax.reload();
+            },
+            error: function (xhr) {
+                console.error("Error:", xhr.responseText);
+                alert("Failed to create request: " + xhr.responseText);
+            }
+        });
+    });
+
+    // Edit Maintenance Request
+    $(document).on("click", ".edit-btn", function () {
+        let id = $(this).data("id");
+        $.get(`/transport/maintenance/update/${id}/`, function (data) {
+            $("#editForm [name='vehicle']").val(data.vehicle_id);
+            $("#editForm [name='requested_by']").val(data.requested_by);
+            $("#editForm [name='category']").val(data.category);
+            $("#editForm [name='description']").val(data.description);
+            $("#editForm [name='status']").val(data.status);
+            $("#editForm").attr("data-id", id);
+            $("#editModal").modal("show");
+        });
+    });
+
+    // Submit Edit Form
+    $("#maintenanceModal").submit(function (e) {
+        e.preventDefault();
+        let id = $(this).attr("data-id");
+        let formData = new FormData(this);
+
+        $.ajax({
+            url: `/transport/maintenance/update/${id}/`,
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: { "X-CSRFToken": getCookie("csrftoken") },
+            success: function (response) {
+                alert(response.message);
+                table.ajax.reload();
+                $("#editModal").modal("hide");
+            }
+        });
+    });
+
+    // Delete Maintenance Request
+    $(document).on("click", ".delete-btn", function () {
+        let id = $(this).data("id");
+
+        if (confirm("Are you sure you want to delete this request?")) {
+            $.ajax({
+                url: `/transport/delete-maintenance-request/${id}/`,
+                type: "POST",
+                headers: { "X-CSRFToken": getCookie("csrftoken") },
+                success: function (response) {
+                    alert(response.message);
+                    table.ajax.reload();
+                }
+            });
+        }
+    });
+
+    // Open Create Inventory Modal
+    $("#createInventoryBtn").on("click", function () {
+        $("#inventoryModalTitle").text("Create Inventory");
+        $("#inventoryForm")[0].reset();
+        $("#inventoryId").val("");
+        $("#inventoryModal").modal("show");
+    });
+
+    // Submit Create or Update Inventory
+    $("#inventoryForm").submit(function (e) {
+        e.preventDefault();
+        let inventoryId = $("#inventoryId").val();
+        let url = inventoryId ? `/inventory/api/items/${inventoryId}/update/` : "/inventory/api/items/create/";
+        let method = inventoryId ? "PUT" : "POST";
+
+        let formData = {
+            item_name: $("#itemName").val(),
+            category: $("#category").val(),
+            description: $("#description").val(),
+            quantity: $("#quantity").val(),
+            transaction_type: $("#transactionType").val(),
+            from_department: $("#fromDepartment").val(),
+            to_department: $("#toDepartment").val(),
+            employee_name: $("#employeeName").val(),
+            employee_phone: $("#employeePhone").val(),
+            employee_ghana_card_number: $("#ghanaCard").val(),
+            employee_position: $("#position").val()
+        };
+
+        $.ajax({
+            url: url,
+            type: method,
+            contentType: "application/json",
+            data: JSON.stringify(formData),
+            headers: { "X-CSRFToken": getCookie("csrftoken") },
+            success: function () {
+                alert("Inventory saved successfully!");
+                $("#inventoryModal").modal("hide");
+                table.ajax.reload();
+            },
+            error: function (xhr) {
+                alert("Error: " + xhr.responseText);
+            }
+        });
+    });
+
+    // Open Edit Inventory Modal
+    $(document).on("click", ".edit-inventory", function () {
+        let inventoryId = $(this).data("id");
+
+        $.ajax({
+            url: `/inventory/api/items/${inventoryId}/`,
+            type: "GET",
+            success: function (data) {
+                $("#inventoryModalTitle").text("Edit Inventory");
+                $("#inventoryId").val(data.id);
+                $("#itemName").val(data.item.name);
+                $("#category").val(data.category);
+                $("#description").val(data.description);
+                $("#quantity").val(data.quantity);
+                $("#transactionType").val(data.transaction_type);
+                $("#fromDepartment").val(data.from_department.name);
+                $("#toDepartment").val(data.to_department.name);
+                $("#employeeName").val(data.employee_name);
+                $("#employeePhone").val(data.employee_phone);
+                $("#ghanaCard").val(data.employee_ghana_card_number);
+                $("#position").val(data.employee_position);
+
+                $("#inventoryModal").modal("show");
+            },
+            error: function (xhr) {
+                alert("Error: " + xhr.responseText);
+            }
+        });
+    });
+
+    // Handle Inventory Request Submission
+    $("#addInventoryRequestModal").submit(function (event) {
+        event.preventDefault();
+        
+        // Prepare the form data
+        let formData = {
+            item: $("#inventory_item").val(),
+            requested_quantity: $("input[name='requested_quantity']").val(),
+            from_department: $("select[name='from_department']").val(),
+            to_department: $("select[name='to_department']").val(),
+            employee: $("#employee").val(),
+            transaction_type: $("select[name='transaction_type']").val(),
+            category: $("#category").val(),
+            description: $("#description").val(),
+            quantity: $("#available_quantity").val(),
+            employee_name: $("#employee option:selected").text(),
+            employee_phone: $("#employee_phone").val(),
+            employee_ghana_card_number: $("#ghana_card").val(),
+            employee_position: $("#employee_position").val(),
+            remarks: ''
+        };
+
+        $.ajax({
+            url: "/inventory/add-request-inventory/",
+            type: "POST",
+            data: JSON.stringify(formData),
+            contentType: "application/json",
+            success: function (response) {
+                if (response.status === 'success') {
+                    alert(response.message);
+                    $('#inventoryTable').DataTable().ajax.reload();
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (err) {
+                alert('Error: ' + err.responseText);
+            }
+        });
+    });
+
+    // Update Inventory Request
+    function updateInventoryRequest(data) {
+        const inventoryId = data.id;
+        $.ajax({
+            url: "/inventory/update-request-inventory/",
+            type: "POST",
+            data: JSON.stringify(data),
+            contentType: "application/json",
+            success: function (response) {
+                if (response.status === 'success') {
+                    alert(response.message);
+                    $('#inventoryTable').DataTable().ajax.reload();
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (err) {
+                alert('Error: ' + err.responseText);
+            }
+        });
+    }
+
+    // Delete Inventory Item
+    $(document).on("click", ".delete-inventory", function () {
+        let inventoryId = $(this).data("id");
+
+        if (!confirm("Are you sure you want to delete this inventory item?")) return;
+
+        $.ajax({
+            url: "/inventory/delete-request-inventory/",
+            type: "POST",
+            data: JSON.stringify({ id: inventoryId }),
+            contentType: "application/json",
+            success: function (response) {
+                if (response.status === 'success') {
+                    alert(response.message);
+                    $('#inventoryTable').DataTable().ajax.reload();
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (err) {
+                alert('Error: ' + err.responseText);
+            }
+        });
+    });
+
+    // Get CSRF Token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            let cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+                let cookie = cookies[i].trim();
+                if (cookie.startsWith(name + "=")) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+
+ </script>
+    
 {% endblock %}

@@ -38,10 +38,7 @@
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="card-title">Employee Details</h4>
                 <div class="mb-3">
-                    <!-- Export Button -->
-                    <a href="{% url 'export_employees_csv' %}" class="btn btn-primary me-2">
-                        <i class="fas fa-file-export"></i> Export
-                    </a>
+                    
             
                     <!-- Import Button with Modal -->
                     <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#importEmployeeModal">
@@ -63,7 +60,7 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
                             <div class="modal-body">
-                                <form action="{% url 'import_employees' %}" method="POST" enctype="multipart/form-data">
+                                <form  method="POST" enctype="multipart/form-data">
                                     {% csrf_token %}
                                     <div class="mb-3">
                                         <label for="csvFile" class="form-label">Upload CSV File</label>
@@ -82,7 +79,6 @@
                         </div>
                     </div>
                 </div>
-            
                 <!-- Add Employee Modal -->
                 <div class="modal fade" id="addEmployeeModal" tabindex="-1" aria-labelledby="addEmployeeModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-lg">
@@ -139,6 +135,7 @@
                                             <input type="text" name="phone" class="form-control">
                                         </div>
                                         
+                                        
                                         <div class="col-md-6">
                                             <label class="form-label">Role</label>
                                             <select name="role" class="form-control">
@@ -153,14 +150,65 @@
                                             <select name="department" class="form-control">
                                                 <option value="Transport">Transport</option>
                                                 <option value="Warehouse">Warehouse</option>
-                                                <option value="Inventory">Inventory</option>
+                                                <option value="Inventory">Procurement & Inventory Management</option>
                                             </select>
                                         </div>
                                         
                                         <div class="col-md-6">
                                             <label class="form-label">Position</label>
-                                            <input type="text" name="position" class="form-control">
+                                            <select name="position" id="positionSelect" class="form-control" required>
+                                                <option value="">-- Select Position --</option>
+                                                <option value="Driver">Driver</option>
+                                                <option value="Driver Assistant">Driver Assistant</option>
+                                                <option value="Manager">Manager</option>
+                                                <option value="Director">Director</option>
+                                                <option value="Warehouse Supervisor">Warehouse Supervisor</option>
+                                            </select>
                                         </div>
+                                        
+                                        <!-- Driver Fields (Initially Hidden) -->
+                                        <div id="driverFields" class="col-md-12" style="display: none;">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">License Number</label>
+                                                    <input type="text" name="license_number" class="form-control">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">License Expiry Date</label>
+                                                    <input type="date" name="license_expiry_date" class="form-control">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Driver Assistant Fields (Initially Hidden) -->
+                                        <div id="driverAssistantFields" class="col-md-12" style="display: none;">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Alternative Phone</label>
+                                                    <input type="text" name="phone_2" class="form-control">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <script>
+                                            document.getElementById("positionSelect").addEventListener("change", function() {
+                                                let position = this.value;
+                                                let driverFields = document.getElementById("driverFields");
+                                                let driverAssistantFields = document.getElementById("driverAssistantFields");
+                                        
+                                                if (position === "Driver") {
+                                                    driverFields.style.display = "block";
+                                                    driverAssistantFields.style.display = "none";
+                                                } else if (position === "Driver Assistant") {
+                                                    driverFields.style.display = "none";
+                                                    driverAssistantFields.style.display = "block";
+                                                } else {
+                                                    driverFields.style.display = "none";
+                                                    driverAssistantFields.style.display = "none";
+                                                }
+                                            });
+                                        </script>
+                                        
                                         <div class="col-md-6">
                                             <label class="form-label">Hire Date</label>
                                             <input type="date" name="hire_date" class="form-control">
@@ -193,193 +241,367 @@
 
             <div class="card-body">
                 <table id="employeeTable" class="table table-striped table-bordered datatable">
-                    <thead class="table-dark">
+                    <thead class=""">
                         <tr>
-                            {% comment %} <th>Employee ID</th> {% endcomment %}
-                            <th>Name</th>
-                            <th>Department</th>
-                            <th>Position</th>
-                            <th>Gender</th>
-                            <th>Phone</th>
-                            <th>Ghana Card</th>
-                            <th>Hire Date</th>
-                            <th>Salary</th>
-                            <th>Photo</th>
-                            <th>Actions</th>
+                            {% comment %} <th>EMPLOYEE ID</th> {% endcomment %}
+                        <th>NAME</th>
+                        <th>DEPARTMENT</th>
+                        <th>POSITION</th>
+                        <!-- <th>GENDER</th> -->
+                        <th>PHONE</th>
+                        <th>GHANA CARD</th>
+                        <th>HIRE DATE</th>
+                        <th>SALARY</th>
+                        <th>PHOTO</th>
+                        <th>ACTIONS</th>
+
                         </tr>
                     </thead>
-                    <tbody>
-                        {% for employee in employees %}
-                        <tr id="employeeRow{{ employee.id }}">
-                            {% comment %} <td>{{ employee.employee_id }}</td> {% endcomment %}
-                            <td>{{ employee.employee_name }}</td>
-                            <td>{{ employee.department }}</td>
-                            <td>{{ employee.position }}</td>
-                            <td>{{ employee.get_gender_display }}</td>
-                            <td>{{ employee.phone }}</td>
-                            <td>{{ employee.ghana_card }}</td>
-                            <td>{{ employee.hire_date|date:"Y-m-d" }}</td>
-                            <td>{{ employee.salary }}</td>
-                            <td>
-                                {% if employee.photo %}
-                                    <a href="#" data-bs-toggle="modal" data-bs-target="#photoModal{{ employee.id }}">
-                                        <img src="{{ employee.photo.url }}" alt="Employee Photo" class="img-thumbnail" width="30">
-                                    </a>
-                                    <div class="modal fade" id="photoModal{{ employee.id }}" tabindex="-1" aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-centered">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title">Employee Photo</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                                </div>
-                                                <div class="modal-body text-center">
-                                                    <img src="{{ employee.photo.url }}" alt="Full Size Employee Photo" class="img-fluid">
-                                                </div>
+                </table>
+            </div>
+                    
+                    
+                    <!-- Edit Employee Modal -->
+                    <div class="modal fade" id="editEmployeeModal{{ employee.id }}" tabindex="-1" aria-labelledby="editEmployeeModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="addEmployeeModalLabel">Add New Employee</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form method="POST" enctype="multipart/form-data" id="addEmployeeForm" action="{% url 'add_employee' %}">
+                                        {% csrf_token %}
+                                        <div class="row">
+                                            
+                                            <div class="col-md-6">
+                                                <label class="form-label">Username</label>
+                                                <input type="text" name="username" class="form-control" required>
+                                            </div>
+    
+                                            <div class="col-md-6">
+                                                <label class="form-label">email</label>
+                                                <input type="email" name="email" class="form-control" required>
+                                            </div>
+    
+                                            <div class="col-md-6">
+                                                <label class="form-label">password</label>
+                                                <input type="password" name="password" class="form-control" required>
+                                            </div>
+    
+                                            <div class="col-md-6">
+                                                <label class="form-label">Full Name</label>
+                                                <input type="text" name="employee_name" class="form-control" required value="{{ employee.employee_name }}">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Date of Birth</label>
+                                                <input type="date" name="date_of_birth" class="form-control" required value="{{ employee.date_of_birth }}">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Joining Date</label>
+                                                <input type="date" name="joining_date" class="form-control" value="{{ employee.joining_date }}">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Gender</label>
+                                                <select name="gender" class="form-control" value="{{ employee.gender }}">
+                                                    <option value="Male">MALE</option>
+                                                    <option value="Female">FEMALE</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Ghana Card Number</label>
+                                                <input type="text" name="ghana_card" class="form-control" value="{{ employee.ghana_card }}">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Phone</label>
+                                                <input type="text" name="phone" class="form-control" value="{{ employee.phone }}">
+                                            </div>
+                                            
+                                            <div class="col-md-6">
+                                                <label class="form-label">Role</label>
+                                                <select name="role" class="form-control" value="{{ employee.role }}">
+                                                    {% for role_key, role_label in role_choices %}
+                                                        <option value="{{ role_key }}">{{ role_label }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+    
+                                            <div class="col-md-6">
+                                                <label class="form-label">Department</label>
+                                                <select name="department" class="form-control" value="{{ employee.department }}">
+                                                    <option value="Transport">Transport</option>
+                                                    <option value="Warehouse">Warehouse</option>
+                                                    <option value="Inventory">Procurement & Inventory Management</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="col-md-6">
+                                                <label class="form-label">Position</label>
+                                                <input type="text" name="position" class="form-control" value="{{ employee.position }}">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Hire Date</label>
+                                                <input type="date" name="hire_date" class="form-control" value="{{ employee.hire_date }}">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Salary</label>
+                                                <input type="number" name="salary" class="form-control" value="{{ employee.salary }}">
+                                            </div>
+                                            
+                                            <div class="col-md-12">
+                                                <label class="form-label">Profile Picture</label>
+                                                <input type="file" name="profile_picture" class="form-control" value="{{ employee.profile_picture }}">
                                             </div>
                                         </div>
-                                    </div>
-                                {% else %}
-                                    <span class="text-muted">No Photo</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <div class="dropdown">
-                                    <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                        <i class="fas fa-ellipsis-v"></i>
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item edit-vehicle" href="#" data-bs-toggle="modal" data-bs-target="#editEmployeeModal{{ employee.id }}" data-id="{{ employee.id }}">Edit</a></li>
-                                        <li><a class="dropdown-item text-danger delete-employee" href="" data-id="{{ employee.id }}" onclick="/employees/employee-delete/{{ employee.id }}">Delete</a></li>
-                                    </ul>
-                                </div>
-                            </td>
-                                
-                            
-            
-                            
-                           <!-- Edit Employee Modal -->
-                            <div class="modal fade" id="editEmployeeModal{{ employee.id }}" tabindex="-1" aria-labelledby="editEmployeeModalLabel" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="addEmployeeModalLabel">Add New Employee</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        <div class="text-end mt-3">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-save"></i> Save Employee
+                                            </button>
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                <i class="fas fa-times"></i> Cancel
+                                            </button>
                                         </div>
-                                        <div class="modal-body">
-                                            <form method="POST" enctype="multipart/form-data" id="addEmployeeForm" action="{% url 'add_employee' %}">
-                                                {% csrf_token %}
-                                                <div class="row">
-                                                    
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Username</label>
-                                                        <input type="text" name="username" class="form-control" required>
-                                                    </div>
-            
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">email</label>
-                                                        <input type="email" name="email" class="form-control" required>
-                                                    </div>
-            
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">password</label>
-                                                        <input type="password" name="password" class="form-control" required>
-                                                    </div>
-            
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Full Name</label>
-                                                        <input type="text" name="employee_name" class="form-control" required value="{{ employee.employee_name }}">
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Date of Birth</label>
-                                                        <input type="date" name="date_of_birth" class="form-control" required value="{{ employee.date_of_birth }}">
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Joining Date</label>
-                                                        <input type="date" name="joining_date" class="form-control" value="{{ employee.joining_date }}">
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Gender</label>
-                                                        <select name="gender" class="form-control" value="{{ employee.gender }}">
-                                                            <option value="Male">MALE</option>
-                                                            <option value="Female">FEMALE</option>
-                                                        </select>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Ghana Card Number</label>
-                                                        <input type="text" name="ghana_card" class="form-control" value="{{ employee.ghana_card }}">
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Phone</label>
-                                                        <input type="text" name="phone" class="form-control" value="{{ employee.phone }}">
-                                                    </div>
-                                                    
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Role</label>
-                                                        <select name="role" class="form-control" value="{{ employee.role }}">
-                                                            {% for role_key, role_label in role_choices %}
-                                                                <option value="{{ role_key }}">{{ role_label }}</option>
-                                                            {% endfor %}
-                                                        </select>
-                                                    </div>
-            
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Department</label>
-                                                        <select name="department" class="form-control" value="{{ employee.department }}">
-                                                            <option value="Transport">Transport</option>
-                                                            <option value="Warehouse">Warehouse</option>
-                                                            <option value="Inventory">Inventory</option>
-                                                        </select>
-                                                    </div>
-                                                    
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Position</label>
-                                                        <input type="text" name="position" class="form-control" value="{{ employee.position }}">
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Hire Date</label>
-                                                        <input type="date" name="hire_date" class="form-control" value="{{ employee.hire_date }}">
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label">Salary</label>
-                                                        <input type="number" name="salary" class="form-control" value="{{ employee.salary }}">
-                                                    </div>
-                                                    
-                                                    <div class="col-md-12">
-                                                        <label class="form-label">Profile Picture</label>
-                                                        <input type="file" name="profile_picture" class="form-control" value="{{ employee.profile_picture }}">
-                                                    </div>
-                                                </div>
-                                                <div class="text-end mt-3">
-                                                    <button type="submit" class="btn btn-primary">
-                                                        <i class="fas fa-save"></i> Save Employee
-                                                    </button>
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                                        <i class="fas fa-times"></i> Cancel
-                                                    </button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                    </div>
+                                    </form>
                                 </div>
                             </div>
+                            </div>
+                        </div>
+                    </div>
 
-                            
-                            {% empty %}
-                            <tr>
-                                <td colspan="11" class="text-center text-muted">No employees found.</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+    
             
             
             
         </div>
     </div>
 </div>
+
+<!-- Image Preview Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageModalLabel">Employee Photo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalImage" src="" class="img-fluid" alt="Employee Photo">
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<!-- jQuery (Required for DataTables) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+<script>
+   $(document).ready(function () {
+    // Initialize DataTable
+    let table = $("#employeeTable").DataTable({
+        paging: true,
+        searching: true,
+        ordering: true,
+        info: true,
+        responsive: true,
+        autoWidth: false,
+        processing: true,
+        serverSide: false,
+        "ajax": "/employees/all-employee-list/",
+        "columns": [
+            { 
+                "data": "employee_name",
+                "render": function(data) { return data ? data.toUpperCase() : ""; }
+            },
+            { 
+                "data": "department",
+                "render": function(data) { return data ? data.toUpperCase() : ""; }
+            },
+            { 
+                "data": "position",
+                "render": function(data) { return data ? data.toUpperCase() : ""; }
+            },
+            { 
+                "data": "phone",
+                "render": function(data) { return data ? data.toUpperCase() : ""; }
+            },
+            { 
+                "data": "ghana_card",
+                "render": function(data) { return data ? data.toUpperCase() : ""; }
+            },
+            { 
+                "data": "hire_date",
+                "render": function(data) { return data ? data.toUpperCase() : ""; }
+            },
+            { 
+                "data": "salary",
+                "render": function(data) { return data ? data.toString().toUpperCase() : ""; }
+            },
+            { 
+                "data": "photo",
+                "render": function(data) {
+                    return data ? 
+                        `<img src="/media/${data}" width="30" height="30" 
+                        style="cursor: pointer;" class="img-thumbnail preview-image" 
+                        data-bs-toggle="modal" data-bs-target="#imageModal" 
+                        data-img="/media/${data}">` 
+                        : "NO PHOTO";
+                }
+            },
+            {
+                "data": "id",
+                "render": function(data) {
+                    return `
+                        <button class="btn btn-sm btn-warning edit" data-id="${data}">VIEW</button>
+                        <button class="btn btn-sm btn-danger delete" data-id="${data}">DELETE</button>
+                    `;
+                }
+            }
+        ],
+        dom: 'Bfrtip',
+        buttons: [
+            { extend: 'copy', className: 'btn btn-secondary' },
+            { extend: 'csv', className: 'btn btn-success' },
+            { extend: 'excel', className: 'btn btn' },
+            { extend: 'pdf', className: 'btn btn-danger' },
+            { extend: 'print', className: 'btn btn-info' }
+        ]
+    });
+
+    // Click event to show image in modal
+    $(document).on("click", ".preview-image", function() {
+        let imgSrc = $(this).attr("data-img");
+        $("#modalImage").attr("src", imgSrc);
+        $("#imageModal").modal("show");
+    });
+
+
+
+    function getCSRFToken() {
+    return document.cookie.split('; ')
+        .find(row => row.startsWith('csrftoken='))?.split('=')[1];
+}
+
+// Add Employee
+$("#addEmployeeForm").submit(function (event) {
+    event.preventDefault();
+
+    let formData = {
+        username: $("input[name='username']").val(),
+        email: $("input[name='email']").val(),  // Add email field
+        password: $("input[name='password']").val(), 
+        employee_name: $("input[name='employee_name']").val(),
+        date_of_birth: $("input[name='date_of_birth']").val(),
+        joining_date: $("input[name='joining_date']").val(),
+        gender: $("select[name='gender']").val(),
+        ghana_card: $("input[name='ghana_card']").val(),
+        phone: $("input[name='phone']").val(),
+        phone_2: $("input[name='phone_2']").val(),
+        role: $("select[name='role']").val(),
+        department: $("select[name='department']").val(),
+        position: $("#positionSelect").val(),
+        hire_date: $("input[name='hire_date']").val(),
+        salary: $("input[name='salary']").val(),
+        license_number: $("input[name='license_number']").val(),
+        license_expiry_date: $("input[name='license_expiry_date']").val()
+        
+    };
+
+    $.ajax({
+        url: "/employees/add/",
+        type: "POST",
+        contentType: "application/json",
+        headers: { "X-CSRFToken": getCSRFToken() },  // ✅ CSRF token added
+        data: JSON.stringify(formData),
+        success: function (response) {
+            alert(response.message);
+            table.ajax.reload();
+            $("#addEmployeeModal").modal("hide");
+        },
+        error: function (xhr) {
+            alert("Error: " + xhr.responseText);
+        }
+    });
+});
+
+
+    // Edit Employee (Fill the modal)
+    $("#employeeTable").on("click", ".edit", function () {
+        let id = $(this).data("id");
+        $.get(`/employees/detail/${id}/`, function (data) {
+            $("#edit_employee_id").val(id);
+            $("#edit_employee_name").val(data.employee_name);
+            $("#edit_department").val(data.department);
+            $("#edit_position").val(data.position);
+            $("#edit_phone").val(data.phone);
+            $("#edit_ghana_card").val(data.ghana_card);
+            $("#edit_hire_date").val(data.hire_date);
+            $("#edit_salary").val(data.salary);
+            $("#editEmployeeModal").modal("show");
+        });
+    });
+
+    // Update Employee
+    $("#editEmployeeForm").submit(function (event) {
+        event.preventDefault();
+        let id = $("#edit_employee_id").val();
+        let formData = {
+            employee_name: $("#edit_employee_name").val(),
+            department: $("#edit_department").val(),
+            position: $("#edit_position").val(),
+            phone: $("#edit_phone").val(),
+            ghana_card: $("#edit_ghana_card").val(),
+            hire_date: $("#edit_hire_date").val(),
+            salary: $("#edit_salary").val(),
+        };
+
+        $.ajax({
+            url: `/employees/update/${id}/`,
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(formData),
+            success: function (response) {
+                alert(response.message);
+                table.ajax.reload();
+                $("#editEmployeeModal").modal("hide");
+            }
+        });
+    });
+
+    function getCSRFToken() {
+    return document.cookie.split('; ')
+        .find(row => row.startsWith('csrftoken='))?.split('=')[1];
+}
+
+// Delete Employee
+$("#employeeTable").on("click", ".delete", function () {
+    let id = $(this).data("id");
+    if (confirm("Are you sure you want to delete this employee?")) {
+        $.ajax({
+            url: `/employees/employee-delete/${id}/`,
+            type: "POST",
+            headers: { "X-CSRFToken": getCSRFToken() },  // ✅ Add CSRF token here
+            success: function (response) {
+                alert(response.message);
+                table.ajax.reload();
+            },
+            error: function (xhr) {
+                alert("Error: " + xhr.responseText);
+            }
+        });
+    }
+});
+
+});
+
+</script>
+
+
 {% endblock %}
 
 {% block footer %}

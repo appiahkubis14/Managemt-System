@@ -1,0 +1,519 @@
+
+{% extends 'transport/transport_base.html' %}
+{% load i18n static %}
+{% load custom_filters %}
+
+
+{% block add_new %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="card-title">Vehicle Assignment and Maintenance Request</h4>
+                <div class="mb-3">
+                    <!-- Export Button -->
+                    <!-- <a href="{% url 'export_vehicles' %}" class="btn btn-primary me-2">
+                        <i class="fas fa-file-export"></i> Export
+                    </a> -->
+
+                    <!-- Import Button with Modal -->
+                    <!-- <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#importVehicleModal">
+                        <i class="fas fa-file-import"></i> Import
+                    </button> -->
+                    
+                    <!-- <a href=" " class="btn btn-secondary me-2">
+                        <i class="fas fa-tools"></i> Request Maintenance
+                    </a> -->
+
+                    <!-- <button class="btn btn-pink" data-bs-toggle="modal" data-bs-target="#addRequestModal">
+                        <i class="fas fa-plus-circle"></i> Request Maintenance
+                    </button>
+                    
+                    
+                    <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#addVehicleModal">
+                        <i class="fas fa-plus-circle"></i> Add
+                    </button> -->
+                </div>
+                
+                <!-- Import Vehicle Modal -->
+                <div class="modal fade" id="importVehicleModal" tabindex="-1" aria-labelledby="importVehicleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Import</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form action="{% url 'import_vehicles' %}" method="POST" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label for="csvFile" class="form-label">Upload CSV File</label>
+                                        <input type="file" name="csv_file" class="form-control" id="csvFile" required>
+                                    </div>
+                                    <div class="text-end">
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-upload"></i> Upload
+                                        </button>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                            <i class="fas fa-times"></i> Cancel
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+                
+            {% endblock %}
+
+
+            {% block content %}
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table id="clientTable" class="table table-striped table-bordered datatable">
+                                    <thead class="">
+                                        <tr>
+                                            <th>CLIENT NAME</th>
+                                            <th>EMAIL</th>
+                                            <th>REQUEST TYPE</th>
+                                            <th>SCHEDULED DATE</th>
+                                            <th>STATUS</th>
+                                            <th>VEHICLE LICENSE PLATE</th>
+                                            <th>VEHICLE TYPE</th>
+                                            <th>VEHICLE MAKE</th>
+                                            <th>VEHICLE MODEL</th>
+                                            <th>DRIVER</th>
+                                            <th>ASSISTANT</th>
+                                            <th>PICKUP LOCATION</th>
+                                            <th>DELIVERY LOCATION</th>
+                                            <th>ACTIONS</th>
+                                        </tr>
+                                        
+                                    </thead>
+                                </table>
+                            </div>
+                        </div>
+
+                           <!-- Edit -->
+<div class="modal fade" id="clientRequestModal{{ assignment.assigned_vehicle.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style="width: 800px;">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit {{ assignment.assigned_vehicle.license_plate }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editVehicleForm{{ client_request.id }}" 
+
+                    method="POST">
+                    {% csrf_token %}
+
+                    <!-- Client Request Details Section -->
+                    <h4 class="text-center mb-3">Client Request Details</h4>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Client Name</label>
+                            <input type="text" class="form-control" name="client_name" value="{{ client_request.client_name|default:'' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" name="email" value="{{ client_request.email|default:'' }}" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Request Type</label>
+                            <select name="request_type" class="form-control" required>
+                                {% for type, label in request_types %}
+                                    <option value="{{ type }}" {% if client_request.request_type == type %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Scheduled Date</label>
+                            <input type="datetime-local" class="form-control" name="scheduled_date" value="{{ client_request.scheduled_date|date:'Y-m-d\TH:i'|default:'' }}" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="description" rows="3" required>{{ client_request.description|default:'' }}</textarea>
+                    </div>
+
+                    <!-- Vehicle Assignment Section -->
+                    <h4 class="text-center mb-3">Vehicle Assignment</h4>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Select Vehicle</label>
+                            <select id="vehicle_select" class="form-control" name="vehicle_id" required>
+                                <option value="">-- Select Vehicle --</option>
+                                {% for assignment in assignments %}
+                                <option value="{{ assignment.vehicle.id }}" {% if client_request.vehicle_id == assignment.vehicle.id %}selected{% endif %}>
+                                    {{ assignment.vehicle.vehicle_type }} - {{ assignment.vehicle.license_plate }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Dispatch Assignment Section -->
+                    <h4 class="text-center mb-3">Dispatch Assignment</h4>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Driver</label>
+                            <select class="form-control" name="driver_id" required>
+                                <option value="">-- Select Driver --</option>
+                                {% for driver in drivers %}
+                                <option value="{{ driver.id }}" {% if client_request.driver_id == driver.id %}selected{% endif %}>{{ driver.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Driver Assistant</label>
+                            <select class="form-control" name="assistant_id">
+                                <option value="">None</option>
+                                {% for assistant in assistants %}
+                                <option value="{{ assistant.id }}" {% if client_request.assistant_id == assistant.id %}selected{% endif %}>{{ assistant.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Pickup Location</label>
+                            <input type="text" class="form-control" name="pickup_location" value="{{ client_request.pickup_location|default:'' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Delivery Location</label>
+                            <input type="text" class="form-control" name="delivery_location" value="{{ client_request.delivery_location|default:'' }}" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            <select name="status" class="form-control" required>
+                                <option value="PENDING" {% if client_request.status == 'PENDING' %}selected{% endif %}>Pending</option>
+                                <option value="IN_PROGRESS" {% if client_request.status == 'IN_PROGRESS' %}selected{% endif %}>In Progress</option>
+                                <option value="COMPLETED" {% if client_request.status == 'COMPLETED' %}selected{% endif %}>Completed</option>
+                                <option value="CANCELLED" {% if client_request.status == 'CANCELLED' %}selected{% endif %}>Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Trip Log</label>
+                            <textarea class="form-control" name="trip_log">{{ client_request.trip_log|default:'' }}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <button type="submit" class="btn btn-success">Update Client Request</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+         
+
+            <!-- Edit Modal -->
+<!-- <div class="modal fade" id="editModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Client Request</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editRequestId">
+                <label>Status:</label>
+                <input type="text" id="editStatus" class="form-control">
+                <label>Scheduled Date:</label>
+                <input type="datetime-local" id="editScheduledDate" class="form-control">
+                <label>Description:</label>
+                <textarea id="editDescription" class="form-control"></textarea>
+                <label>Pickup Location:</label>
+                <input type="text" id="editPickupLocation" class="form-control">
+                <label>Delivery Location:</label>
+                <input type="text" id="editDeliveryLocation" class="form-control">
+                <label>Trip Log:</label>
+                <textarea id="editTripLog" class="form-control"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" id="updateClientRequest">Update</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div> -->
+
+
+            
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.dataTables.min.css">
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js"></script>
+
+<!-- Export & Import Scripts -->
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.colVis.min.js"></script>
+
+
+<script>
+    $(document).ready(function(){
+    let table = $('#clientTable').DataTable({
+        paging: true,
+        searching: true,
+        ordering: true,
+        info: true,
+        responsive: true,
+        autoWidth: false,
+        processing: true,
+        serverSide: false,
+        pageLength: 3, // Default number of items per page
+        lengthMenu: [ [5, 10, 25, 50, -1], [5, 10, 25, 50, "All"] ],
+        ajax: {
+            url: "/transport/client-requests-list/",
+            type: "GET",
+            dataSrc: ""
+        },
+        columns: [
+            { data: "client_name", render: data => data ? data.toUpperCase() : "" },
+            { data: "email", render: data => data ? data.toUpperCase() : "" },
+            { data: "request_type", render: data => data ? data.toUpperCase() : "" },
+            { data: "scheduled_date", render: data => data ? data.toUpperCase() : "" },
+            { data: "status", render: data => data ? data.toUpperCase() : "" },
+            { data: "vehicle_license_plate", render: data => data ? data.toUpperCase() : "" },
+            { data: "vehicle_type", render: data => data ? data.toUpperCase() : "" },
+            { data: "vehicle_make", render: data => data ? data.toUpperCase() : "" },
+            { data: "vehicle_model", render: data => data ? data.toUpperCase() : "" },
+            { data: "driver", render: data => data ? data.toUpperCase() : "" },
+            { data: "assistant", render: data => data ? data.toUpperCase() : "" },
+            { data: "pickup_location", render: data => data ? data.toUpperCase() : "" },
+            { data: "delivery_location", render: data => data ? data.toUpperCase() : "" },
+            {
+                data: "id",
+                render: function(data){
+                    return `
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-warning btn-sm edit-btn" 
+                                data-id="${data}" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#clientRequestModal">
+                                <i class="fas fa-edit"></i> VIEW
+                            </button>
+
+                            <button class="btn btn-danger btn-sm delete-btn" data-id="${data}">
+                                <i class="fas fa-trash"></i> DELETE
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+        ], // ✅ Fixed missing closing bracket
+
+        dom: 'Bfrtip',
+        buttons: [
+            { extend: 'copy', className: 'btn btn-secondary' },
+            { extend: 'csv', className: 'btn btn-success' },
+            { extend: 'excel', className: 'btn btn-' },
+            { extend: 'pdf', className: 'btn btn-danger' },
+            { extend: 'print', className: 'btn btn-info' }
+        ]
+    });
+
+
+
+    // Form submission via AJAX
+    $("#clientRequestForm").submit(function(e) {
+        e.preventDefault(); // Prevent traditional form submission
+
+        let formData = {
+            client_name: $("#client_name").val(),
+            email: $("#email").val(),
+            request_type: $("#request_type").val(),
+            description: $("#description").val(),
+            pickup_location: $("#pickup_location").val(),
+            delivery_location: $("#delivery_location").val(),
+            scheduled_date: $("#scheduled_date").val(),
+            vehicle_id: $("#vehicle_id").val(),
+            driver_id: $("#driver_id").val(),
+            assistant_id: $("#assistant_id").val(),
+            trip_log: $("#trip_log").val()
+        };
+
+        $.ajax({
+            url: "/transport/create_client_request/", // Adjust endpoint as needed
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(formData),
+            headers: {
+                "X-CSRFToken": $("input[name=csrfmiddlewaretoken]").val() // Ensure CSRF token is included
+            },
+            success: function(response) {
+                alert("Request saved successfully!");
+                $("#clientRequestForm")[0].reset(); // Reset the form
+                table.ajax.reload(); // Reload DataTable to fetch new data
+            },
+            error: function(xhr) {
+                let errorMsg = xhr.responseJSON ? xhr.responseJSON.error : "Something went wrong.";
+                alert("Error: " + errorMsg);
+            }
+        });
+    });
+
+
+    // ✅ Use event delegation for dynamically loaded elements
+    $('#clientTable tbody').on('click', '.edit-btn', function() {
+        let requestId = $(this).data('id');
+        console.log(requestId);
+
+        // Fetch data using AJAX
+        fetch(`/transport/client-request/details/${requestId}/`)
+        .then(response => response.json())
+        .then(data => {
+            // Populate the modal fields
+            $("#editVehicleForm input[name='client_name']").val(data.client_name);
+            $("#editVehicleForm input[name='email']").val(data.email);
+            $("#editVehicleForm select[name='request_type']").val(data.request_type);
+            $("#editVehicleForm input[name='scheduled_date']").val(data.scheduled_date);
+            $("#editVehicleForm textarea[name='description']").val(data.description);
+
+            // Vehicle details
+            $("#editVehicleForm input[name='vehicle_license_plate']").val(data.vehicle_license_plate);
+            $("#editVehicleForm input[name='vehicle_type']").val(data.vehicle_type);
+            $("#editVehicleForm input[name='vehicle_make']").val(data.vehicle_make);
+            $("#editVehicleForm input[name='vehicle_model']").val(data.vehicle_model);
+
+            // Dispatch details
+            $("#editVehicleForm select[name='vehicle_id']").val(data.vehicle_id);
+            $("#editVehicleForm select[name='driver_id']").val(data.driver_id);
+            $("#editVehicleForm select[name='assistant_id']").val(data.assistant_id);
+            $("#editVehicleForm input[name='pickup_location']").val(data.pickup_location);
+            $("#editVehicleForm input[name='delivery_location']").val(data.delivery_location);
+            $("#editVehicleForm select[name='status']").val(data.status);
+            $("#editVehicleForm textarea[name='trip_log']").val(data.trip_log);
+
+            // Show the modal
+            let modal = new bootstrap.Modal(document.querySelector("#clientRequestModal"));
+            modal.show();
+        })
+        .catch(error => console.error("Error fetching request details:", error));
+    });
+
+
+
+
+    $(document).ready(function () {
+        $(".editClientRequestForm").submit(function (event) {
+            event.preventDefault(); // Prevent normal form submission
+            
+            let form = $(this);
+            let formData = form.serialize();
+            let requestId = form.attr("data-id");
+
+            $.ajax({
+                type: "PUT",
+                url: "/transport/client-request/update/" + requestId + "/",
+                data: formData,
+                headers: { "X-CSRFToken": "{{ csrf_token }}" },
+                success: function (response) {
+                    alert("Client request updated successfully!");
+                    location.reload(); // Reload page to reflect changes
+                },
+                error: function (xhr) {
+                    alert("Error updating request: " + xhr.responseText);
+                }
+            });
+        });
+    });
+    // Open Edit Modal
+    $('#clientRequestModal').on('click', '.edit-btn', function() {
+        let id = $(this).data('id');
+        
+        $.ajax({
+            url: `/transport/client-requests/${id}/`,
+            type: "GET",
+            success: function(data) {
+                $('#editRequestId').val(id);
+                $('#editStatus').val(data.status.toUpperCase());
+                $('#editScheduledDate').val(data.scheduled_date);
+                $('#editDescription').val(data.description.toUpperCase());
+                $('#editPickupLocation').val(data.pickup_location.toUpperCase());
+                $('#editDeliveryLocation').val(data.delivery_location.toUpperCase());
+                $('#editTripLog').val(data.trip_log.toUpperCase());
+                
+                $('#editModal').modal('show');
+            },
+            error: function(xhr) {
+                alert("ERROR: " + xhr.responseJSON.error.toUpperCase());
+            }
+        });
+    });
+
+    // Handle Update Request
+    $('#updateClientRequest').click(function() {
+        let requestId = $('#editRequestId').val();
+        let requestData = {
+            status: $('#editStatus').val().toUpperCase(),
+            scheduled_date: $('#editScheduledDate').val(),
+            description: $('#editDescription').val().toUpperCase(),
+            pickup_location: $('#editPickupLocation').val().toUpperCase(),
+            delivery_location: $('#editDeliveryLocation').val().toUpperCase(),
+            trip_log: $('#editTripLog').val().toUpperCase()
+        };
+
+        $.ajax({
+            url: `/transport/client-requests/update/${requestId}/`,
+            type: 'PUT',
+            contentType: 'application/json',
+            headers: { "X-CSRFToken": "{{ csrf_token }}" },
+            data: JSON.stringify(requestData),
+            success: function(response) {
+                alert(response.message.toUpperCase());
+                $('#editModal').modal('hide');
+                table.ajax.reload();
+            },
+            error: function(xhr) {
+                alert("ERROR: " + xhr.responseJSON.error.toUpperCase());
+            }
+        });
+    });
+
+    // Handle Delete Request
+    $('#clientTable').on('click', '.delete-btn', function() {
+        let id = $(this).data('id');
+        if (confirm("ARE YOU SURE YOU WANT TO DELETE THIS REQUEST?")) {
+            $.ajax({
+                url: `/transport/client-requests/delete/${id}/`,
+                type: 'DELETE',
+                headers: { "X-CSRFToken": "{{ csrf_token }}" },
+                success: function(response) {
+                    alert(response.message.toUpperCase());
+                    table.ajax.reload();
+                },
+                error: function(xhr) {
+                    alert("ERROR: " + xhr.responseJSON.error.toUpperCase());
+                }
+            });
+        }
+    });
+});
+</script>
+
+
+
+{% endblock %}
+

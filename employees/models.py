@@ -3,12 +3,18 @@ from django.contrib.auth.models import AbstractUser, Group, Permission
 from utils import get_object_choices, IDGenerator, genderType
 
 # Custom User Model
+from django.contrib.auth.models import AbstractUser, Group, Permission
+
 class CustomUser(AbstractUser):
     ROLE_CHOICES = (
         ('admin', 'Admin'),
         ('manager', 'Manager'),
         ('staff', 'Staff'),
         ('driver', 'Driver'),
+        ('driver_assistant', 'Driver Assistant'),
+        ('warehouse_staff', 'Warehouse Staff'),
+        ('inventory_manager', 'Inventory Manager'),
+        # Add more roles as needed
     )
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='staff')
 
@@ -26,6 +32,15 @@ class CustomUser(AbstractUser):
 
     def is_driver(self):
         return self.role == 'driver'
+
+    def is_driver_assistant(self):
+        return self.role == 'driver_assistant'
+
+    def is_warehouse_staff(self):
+        return self.role == 'warehouse_staff'
+
+    def is_inventory_manager(self):
+        return self.role == 'inventory_manager'
 
     def __str__(self):
         return self.username
@@ -49,9 +64,9 @@ class Employee(models.Model):
     photo = models.ImageField(upload_to="employee_photos/", blank=True, null=True)  
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="employee_profile")
     department = models.CharField(max_length=100 , choices=department_choices)
-    position = models.CharField(max_length=100)
+    position = models.CharField(max_length=100,blank=True, null=True)
     hire_date = models.DateField()
-    salary = models.DecimalField(max_digits=10, decimal_places=2)
+    salary = models.CharField(max_length=100)
     # submitted_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name="submitted_employees")  
     # submitted_on = models.DateTimeField(auto_now_add=True)
 
