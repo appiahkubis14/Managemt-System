@@ -233,72 +233,59 @@ class InventoryTransaction(models.Model):
 
 
 
-# class InventoryIssue(models.Model):
-#     inventory_request = models.ForeignKey(InventoryRequest, on_delete=models.CASCADE)
-#     issue_date = models.DateTimeField(auto_now_add=True)
-#     quantity_issued = models.PositiveIntegerField()
-#     warehouse_location = models.CharField(max_length=100)
-
-#     def __str__(self):
-#         return f'{self.inventory_request.item.name} issued to {self.inventory_request.vehicle.license_plate}'
 
 
-# class Supplier(models.Model):
-#     name = models.CharField(max_length=255)
-#     contact_name = models.CharField(max_length=100)
-#     contact_email = models.EmailField()
-#     contact_phone = models.CharField(max_length=15)
-#     address = models.TextField()
+from django.db import models
+from django.core.exceptions import ValidationError
 
-#     def __str__(self):
-#         return self.name
+class VehicleInventoryRequest(models.Model):
+    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name="inventory_requests")
+    inventory_item = models.ForeignKey(InventoryItem, on_delete=models.CASCADE, related_name="vehicle_requests")
+    quantity_requested = models.PositiveIntegerField()
+    quantity_approved = models.PositiveIntegerField(default=0)  # Quantity approved by storekeeper
+    transaction_type = models.CharField(
+        max_length=20,
+        choices=TransactionType.choices
+    )
+    
+    requested_by = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name="vehicle_requests")
+    approved_by = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True, blank=True, related_name="approved_vehicle_requests")
+    
+    request_status = models.CharField(
+        max_length=20,
+        choices=[
+            ('pending', 'Pending'),
+            ('approved', 'Approved'),
+            ('rejected', 'Rejected'),
+            ('issued', 'Issued')
+        ],
+        default='pending'
+    )
+    
+    remarks = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    approved_at = models.DateTimeField(null=True, blank=True)
 
-
-# class MaintenanceLog(models.Model):
-#     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
-#     maintenance_type = models.CharField(max_length=100)
-#     maintenance_date = models.DateTimeField(auto_now_add=True)
-#     parts_used = models.ManyToManyField(InventoryItem)
-#     mileage_at_maintenance = models.PositiveIntegerField()
-#     remarks = models.TextField(null=True, blank=True)
-
-#     def __str__(self):
-#         return f'Maintenance for {self.vehicle.license_plate} on {self.maintenance_date}'
-
-
-# class StockMovement(models.Model):
-#     MOVEMENT_TYPE = [
-#         ('received', 'Received'),
-#         ('transferred', 'Transferred'),
-#         ('issued', 'Issued'),
-#     ]
-#     item = models.ForeignKey(InventoryItem, on_delete=models.CASCADE)
-#     quantity = models.PositiveIntegerField()
-#     movement_type = models.CharField(max_length=50, choices=MOVEMENT_TYPE)
-#     source_location = models.CharField(max_length=100)
-#     destination_location = models.CharField(max_length=100)
-#     movement_date = models.DateTimeField(auto_now_add=True)
-
-#     def __str__(self):
-#         return f'{self.quantity} {self.item.name} {self.movement_type}'
+    
+    def __str__(self):
+        return f"Request for {self.inventory_item.name} ({self.quantity_requested}) for {self.vehicle.license_plate}"
 
 
 
-# class StockReplenishment(models.Model):
-#     item = models.ForeignKey(InventoryItem, on_delete=models.CASCADE)
-#     reorder_level = models.PositiveIntegerField()
-#     quantity_to_reorder = models.PositiveIntegerField()
-#     date_requested = models.DateTimeField(auto_now_add=True)
-#     supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, null=True, blank=True)
-#     status = models.CharField(max_length=50, choices=[('pending', 'Pending'), ('ordered', 'Ordered'), ('delivered', 'Delivered')], default='pending')
+    def save(self, *args, **kwargs):
+        """
+        Validates and updates stock when request is approved.
+        """
+        if self.request_status == 'approved' and not self.approved_by:
+            raise ValidationError("Request must be approved by an authorized employee.")
+        
+        if self.request_status == 'issued':
+            if self.inventory_item.quantity < self.quantity_approved:
+                raise ValidationError("Insufficient stock available!")
+            self.inventory_item.quantity -= self.quantity_approved
+            self.inventory_item.save()
 
-#     def __str__(self):
-#         return f'Replenishment for {self.item.name} - {self.status}'
-
-
-
-
-
+        super().save(*args, **kwargs)
 
 
 

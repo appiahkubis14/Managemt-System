@@ -7,28 +7,7 @@
 {% endblock %}
 
 {% block greeting %}
-<div class="row">
-    <div class="col-12">
-        <div class="page-title-box d-flex align-items-center justify-content-between">
-            <div>
-                <h4 class="fs-16 fw-semibold mb-1 mb-md-2">Vehicle Management</h4>
-                <p class="text-muted mb-0">List of all registered vehicles.</p>
-            </div>
-            <div class="page-title-right">
-                <ol class="breadcrumb m-0">
-                    <li class="breadcrumb-item"><a href="javascript: void(0);">AMP</a></li>
-                    {% for crumb in path|getcrumbs %}
-                        {% if forloop.last %}
-                            <li class="breadcrumb-item active">{{ crumb }}</li>
-                        {% else %}
-                            <li class="breadcrumb-item"><a href="/{{ crumb|lower }}">{{ crumb }}</a></li>
-                        {% endif %}
-                    {% endfor %}
-                </ol>
-            </div>
-        </div>
-    </div>
-</div>
+
 {% endblock greeting %}
 
 {% block main_content %}

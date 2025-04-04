@@ -266,3 +266,6 @@ class ClientRequestInfo(models.Model):
 
     def __str__(self):
         return f"{self.client_name} - {self.vehicle_license_plate}"
+
+
+

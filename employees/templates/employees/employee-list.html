@@ -283,11 +283,11 @@
                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                 </div>
                                 <div class="modal-body">
-                                    <form method="POST" enctype="multipart/form-data" id="addEmployeeForm" action="{% url 'add_employee' %}">
+                                    <form method="POST" enctype="multipart/form-data" id="addEmployeeForm" >
                                         {% csrf_token %}
                                         <div class="row">
                                             
-                                            <div class="col-md-6">
+                                            <!-- <div class="col-md-6">
                                                 <label class="form-label">Username</label>
                                                 <input type="text" name="username" class="form-control" required>
                                             </div>
@@ -300,39 +300,39 @@
                                             <div class="col-md-6">
                                                 <label class="form-label">password</label>
                                                 <input type="password" name="password" class="form-control" required>
-                                            </div>
+                                            </div> -->
     
                                             <div class="col-md-6">
                                                 <label class="form-label">Full Name</label>
-                                                <input type="text" name="employee_name" class="form-control" required value="{{ employee.employee_name }}">
+                                                <input type="text" name="employee_name" class="form-control" required >
                                             </div>
                                             <div class="col-md-6">
                                                 <label class="form-label">Date of Birth</label>
-                                                <input type="date" name="date_of_birth" class="form-control" required value="{{ employee.date_of_birth }}">
+                                                <input type="date" name="date_of_birth" class="form-control" required >
                                             </div>
                                             <div class="col-md-6">
                                                 <label class="form-label">Joining Date</label>
-                                                <input type="date" name="joining_date" class="form-control" value="{{ employee.joining_date }}">
+                                                <input type="date" name="joining_date" class="form-control" >
                                             </div>
                                             <div class="col-md-6">
                                                 <label class="form-label">Gender</label>
-                                                <select name="gender" class="form-control" value="{{ employee.gender }}">
+                                                <select name="gender" class="form-control" ">
                                                     <option value="Male">MALE</option>
                                                     <option value="Female">FEMALE</option>
                                                 </select>
                                             </div>
                                             <div class="col-md-6">
                                                 <label class="form-label">Ghana Card Number</label>
-                                                <input type="text" name="ghana_card" class="form-control" value="{{ employee.ghana_card }}">
+                                                <input type="text" name="ghana_card" class="form-control">
                                             </div>
                                             <div class="col-md-6">
                                                 <label class="form-label">Phone</label>
-                                                <input type="text" name="phone" class="form-control" value="{{ employee.phone }}">
+                                                <input type="text" name="phone" class="form-control" >
                                             </div>
                                             
                                             <div class="col-md-6">
                                                 <label class="form-label">Role</label>
-                                                <select name="role" class="form-control" value="{{ employee.role }}">
+                                                <select name="role" class="form-control">
                                                     {% for role_key, role_label in role_choices %}
                                                         <option value="{{ role_key }}">{{ role_label }}</option>
                                                     {% endfor %}
@@ -341,7 +341,7 @@
     
                                             <div class="col-md-6">
                                                 <label class="form-label">Department</label>
-                                                <select name="department" class="form-control" value="{{ employee.department }}">
+                                                <select name="department" class="form-control" >
                                                     <option value="Transport">Transport</option>
                                                     <option value="Warehouse">Warehouse</option>
                                                     <option value="Inventory">Procurement & Inventory Management</option>
@@ -350,22 +350,83 @@
                                             
                                             <div class="col-md-6">
                                                 <label class="form-label">Position</label>
-                                                <input type="text" name="position" class="form-control" value="{{ employee.position }}">
+                                                <select name="position" id="positionSelect" class="form-control" required>
+                                                    <option value="">-- Select Position --</option>
+                                                    <option value="Driver">Driver</option>
+                                                    <option value="Driver Assistant">Driver Assistant</option>
+                                                    <option value="Manager">Manager</option>
+                                                    <option value="Director">Director</option>
+                                                    <option value="Warehouse Supervisor">Warehouse Supervisor</option>
+                                                    <option value="Warehouse Assistant">Warehouse Assistant</option>
+                                                    <option value="Logistics Coordinator">Logistics Coordinator</option>
+                                                    <option value="Transport Manager">Transport Manager</option>
+                                                    <option value="Fleet Supervisor">Fleet Supervisor</option>
+                                                    <option value="Inventory Manager">Inventory Manager</option>
+                                                    <option value="Operations Manager">Operations Manager</option>
+                                                    <option value="Supply Chain Manager">Supply Chain Manager</option>
+                                                    <option value="Fleet Maintenance Technician">Fleet Maintenance Technician</option>
+                                                    <option value="Driver Trainer">Driver Trainer</option>
+                                                    <option value="Safety Officer">Safety Officer</option>
+                                                    <option value="Warehouse Manager">Warehouse Manager</option>
+                                                    <option value="Inventory Assistant">Inventory Assistant</option>
+                                                </select>
                                             </div>
+                                            
                                             <div class="col-md-6">
                                                 <label class="form-label">Hire Date</label>
-                                                <input type="date" name="hire_date" class="form-control" value="{{ employee.hire_date }}">
+                                                <input type="date" name="hire_date" class="form-control">
                                             </div>
                                             <div class="col-md-6">
                                                 <label class="form-label">Salary</label>
-                                                <input type="number" name="salary" class="form-control" value="{{ employee.salary }}">
+                                                <input type="number" name="salary" class="form-control">
                                             </div>
                                             
                                             <div class="col-md-12">
                                                 <label class="form-label">Profile Picture</label>
-                                                <input type="file" name="profile_picture" class="form-control" value="{{ employee.profile_picture }}">
+                                                <input type="file" name="profile_picture" class="form-control" >
                                             </div>
                                         </div>
+                                        <!-- Driver Fields (Initially Hidden) -->
+                                        <div id="driverFields" class="col-md-12" style="display: none;">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">License Number</label>
+                                                    <input type="text" name="license_number" class="form-control">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">License Expiry Date</label>
+                                                    <input type="date" name="license_expiry_date" class="form-control">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Driver Assistant Fields (Initially Hidden) -->
+                                        <div id="driverAssistantFields" class="col-md-12" style="display: none;">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Alternative Phone</label>
+                                                    <input type="text" name="phone_2" class="form-control">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <script>
+                                            document.getElementById("positionSelect").addEventListener("change", function() {
+                                                let position = this.value;
+                                                let driverFields = document.getElementById("driverFields");
+                                                let driverAssistantFields = document.getElementById("driverAssistantFields");
+                                        
+                                                if (position === "Driver") {
+                                                    driverFields.style.display = "block";
+                                                    driverAssistantFields.style.display = "none";
+                                                } else if (position === "Driver Assistant") {
+                                                    driverFields.style.display = "none";
+                                                    driverAssistantFields.style.display = "block";
+                                                } else {
+                                                    driverFields.style.display = "none";
+                                                    driverAssistantFields.style.display = "none";
+                                                }
+                                            });
+                                        </script>
                                         <div class="text-end mt-3">
                                             <button type="submit" class="btn btn-primary">
                                                 <i class="fas fa-save"></i> Save Employee
@@ -471,8 +532,8 @@
                 "data": "id",
                 "render": function(data) {
                     return `
-                        <button class="btn btn-sm btn-warning edit" data-id="${data}">VIEW</button>
-                        <button class="btn btn-sm btn-danger delete" data-id="${data}">DELETE</button>
+                        <button class="btn btn-sm btn-warning btn-edit" data-id="${data}">VIEW</button>
+                        <button class="btn btn-sm btn-danger btn-delete" data-id="${data}">DELETE</button>
                     `;
                 }
             }
@@ -500,6 +561,7 @@
     return document.cookie.split('; ')
         .find(row => row.startsWith('csrftoken='))?.split('=')[1];
 }
+
 
 
 $("#addEmployeeForm").submit(function (event) {
@@ -550,19 +612,20 @@ $("#addEmployeeForm").submit(function (event) {
     });
 });
 
-
-
 $(document).on("click", ".btn-edit", function () {
     const employeeId = $(this).data("id");
+    console.log(employeeId);
 
     $.ajax({
-        url: `employees/employee/${employeeId}/`, // Adjust URL if different
+        url: `/employees/employee/${employeeId}/`, // Adjust URL if different
         type: "GET",
         success: function (data) {
+            console.log(data);
+
             // Autofill form fields in the update modal
             $("#editEmployeeForm input[name='username']").val(data.username);
             $("#editEmployeeForm input[name='email']").val(data.email);
-            $("#editEmployeeForm input[name='password']").val(""); // Leave empty or optional
+            // $("#editEmployeeForm input[name='password']").val(""); // Leave empty or optional
             $("#editEmployeeForm input[name='employee_name']").val(data.employee_name);
             $("#editEmployeeForm input[name='date_of_birth']").val(data.date_of_birth);
             $("#editEmployeeForm input[name='joining_date']").val(data.joining_date);
@@ -572,20 +635,60 @@ $(document).on("click", ".btn-edit", function () {
             $("#editEmployeeForm input[name='phone_2']").val(data.phone_2);
             $("#editEmployeeForm select[name='role']").val(data.role);
             $("#editEmployeeForm select[name='department']").val(data.department);
-            $("#editEmployeeForm select[name='position']").val(data.position).change();
+            $("#editEmployeeForm select[name='position']").val(data.position).change(); // Triggers the position-related fields
             $("#editEmployeeForm input[name='hire_date']").val(data.hire_date);
             $("#editEmployeeForm input[name='salary']").val(data.salary);
-            $("#editEmployeeForm input[name='license_number']").val(data.license_number);
-            $("#editEmployeeForm input[name='license_expiry_date']").val(data.license_expiry_date);
+            
+            // Set the profile picture if it exists
+            if (data.profile_picture) {
+                // Create an <img> element to display the profile picture
+                const profilePic = `<img src="${data.profile_picture}" alt="Profile Picture" class="img-thumbnail" style="max-width: 100px; height: auto;">`;
+                $("#editEmployeeForm .profile-picture-container").html(profilePic);
+            }
 
+            // Set driver fields if the role is 'Driver'
+            if (data.role.toLowerCase() === "driver") {
+                $("#driverFields").show();
+                $("#driverAssistantFields").hide();
+                $("#editEmployeeForm input[name='license_number']").val(data.license_number);
+                $("#editEmployeeForm input[name='license_expiry_date']").val(data.license_expiry_date);
+            }
+            // Set driver assistant fields if the role is 'Driver Assistant'
+            else if (data.role.toLowerCase() === "driver assistant") {
+                $("#driverFields").hide();
+                $("#driverAssistantFields").show();
+                $("#editEmployeeForm input[name='phone_2']").val(data.phone_2);
+            } else {
+                // Hide both driver and driver assistant fields if it's another role
+                $("#driverFields").hide();
+                $("#driverAssistantFields").hide();
+            }
+
+            // Show the modal
             $("#editEmployeeModal").modal("show");
             $("#editEmployeeForm").attr("data-id", employeeId); // Store ID for submission
+
+            // Success SweetAlert
+            Swal.fire({
+                title: 'Data Loaded Successfully',
+                text: 'Employee data has been fetched and displayed in the form.',
+                icon: 'success',
+                confirmButtonText: 'Okay'
+            });
         },
         error: function (xhr) {
-            alert("Failed to fetch employee data");
+            // Error SweetAlert
+            Swal.fire({
+                title: 'Error!',
+                text: 'Failed to fetch employee data. Please try again.',
+                icon: 'error',
+                confirmButtonText: 'Okay'
+            });
         }
     });
 });
+
+
 
 
 $("#editEmployeeForm").submit(function (event) {
@@ -640,23 +743,50 @@ $("#editEmployeeForm").submit(function (event) {
 $(document).on("click", ".btn-delete", function () {
     const employeeId = $(this).data("id");
 
-    if (confirm("Are you sure you want to delete this employee?")) {
-        $.ajax({
-            url: `/employees/${employeeId}/delete/`,
-            type: "POST", // or DELETE if supported
-            headers: {
-                "X-CSRFToken": getCSRFToken()
-            },
-            success: function (response) {
-                alert("Employee deleted successfully");
-                table.ajax.reload();
-            },
-            error: function (xhr) {
-                alert("Delete failed: " + xhr.responseText);
-            }
-        });
-    }
+    // Use SweetAlert to confirm deletion
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'No, cancel!',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Proceed with AJAX request to delete the employee
+            $.ajax({
+                url: `/employees/employee/${employeeId}/delete/`,
+                type: "POST", // or DELETE if supported
+                headers: {
+                    "X-CSRFToken": getCSRFToken()
+                },
+                success: function (response) {
+                    // Show success SweetAlert
+                    Swal.fire({
+                        title: 'Deleted!',
+                        text: 'Employee has been deleted successfully.',
+                        icon: 'success',
+                        confirmButtonText: 'Okay'
+                    });
+
+                    // Reload the table
+                    table.ajax.reload();
+                },
+                error: function (xhr) {
+                    // Show error SweetAlert
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'Delete failed: ' + xhr.responseText,
+                        icon: 'error',
+                        confirmButtonText: 'Okay'
+                    });
+                }
+            });
+        }
+    });
 });
+
 
 
 });

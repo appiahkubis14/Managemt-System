@@ -4,6 +4,8 @@ from .models import (
     Stationery, InventoryRequest,InventoryItem
 )
 
+# from django.contrib import admine
+from .models import VehicleInventoryRequest
 
 @admin.register(InventoryItem)
 class InventoryItemAdmin(admin.ModelAdmin):
@@ -91,3 +93,21 @@ class InventoryTransactionAdmin(admin.ModelAdmin):
     search_fields = ("item__name", "transaction_type", "from_department__name", "to_department__name", "approved_by__name")
     list_filter = ("transaction_type", "approved_at")
     ordering = ("-approved_at",)
+
+
+class VehicleInventoryRequestAdmin(admin.ModelAdmin):
+    list_display = ('id', 'vehicle', 'inventory_item', 'quantity_requested', 'quantity_approved', 'transaction_type', 'requested_by', 'approved_by', 'request_status', 'created_at', 'approved_at')
+    list_filter = ('request_status', 'transaction_type', 'created_at')
+    search_fields = ('vehicle__license_plate', 'inventory_item__name', 'requested_by__name', 'approved_by__name')
+    ordering = ('-created_at',)
+    readonly_fields = ('created_at', 'approved_at')
+
+    def has_add_permission(self, request):
+        """Prevent adding records directly from the admin."""
+        return False  # Set to True if manual additions should be allowed
+
+    def has_delete_permission(self, request, obj=None):
+        """Prevent deletion from the admin."""
+        return False  # Set to True if deletions should be allowed
+
+admin.site.register(VehicleInventoryRequest, VehicleInventoryRequestAdmin)

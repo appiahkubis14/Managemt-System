@@ -69,6 +69,7 @@ urlpatterns = [
 
     path('inventory/view/', inventory_view, name='inventory_view'),
     path('inventory/requested/', requested_inventory, name='requested_inventory'),
+    path('api/get-maintenance/<int:maintenance_id>/', get_maintenance_request_details, name='get_maintenance_details'),
     
     path('inventory-requests/', get_inventory_requests, name='get_inventory_requests'),
     path('inventory-requests/<int:id>/', get_inventory_request_detail, name='get_inventory_request_detail'),

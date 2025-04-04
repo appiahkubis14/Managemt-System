@@ -34,7 +34,7 @@
                     <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#addVehicleModal">
                         <i class="fas fa-plus-circle"></i> Add Assignmnet
                     </button>
-                    <button class="btn btn-info btn-sm edit-btn edit-vehicle" data-bs-toggle="modal" data-bs-target="#clientRequestModal{{ assignment.assigned_vehicle.id }}" data-id="{{ assignment.assigned_vehicle.id}}">ASSIGN TASK TO VEHICLE</button>
+                    <button class="btn btn-info btn-sm edit-btn edit-vehicle" data-bs-toggle="modal" data-bs-target="#clientRequestModal{{ assignment.assigned_vehicle.id }}" data-id="{{ assignment.assigned_vehicle.id}}">DEPLOY FLEET</button>
                 </div>
                 
                 <!-- Import Vehicle Modal -->
@@ -206,8 +206,8 @@
             {% block content %}
             <div class="card-body">
                 <div class="d-flex justify-content-between">
-                    <h5>Driver-Vehicle Assignments</h5>
-                    <input type="file" id="importAssignments" accept=".csv, .xlsx" class="form-control w-25">
+                    <!-- <h5>Driver-Vehicle Assignments</h5> -->
+                    <!-- <input type="file" id="importAssignments" accept=".csv, .xlsx" class="form-control w-25"> -->
                 </div>
                 <table id="vehicleTable" class="table table-striped table-bordered datatable">
                     <thead class="">
@@ -553,6 +553,8 @@
 <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
 <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
 <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.colVis.min.js"></script>
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
                 
 
@@ -593,7 +595,7 @@
                         return `
                             <div class="d-flex justify-content-center gap-2">
                                 
-                                <button class="btn btn-warning btn-sm edit-btn edit-vehicle" data-bs-toggle="modal" data-bs-target="#assignmentRequestModal{{ assignment.assigned_vehicle.id }}" data-id="{{ assignment.assigned_vehicle.id}}">VIEW</button>
+                                <button class="btn btn-sm btn-primary btn-sm edit-btn edit-vehicle" data-bs-toggle="modal" data-bs-target="#assignmentRequestModal{{ assignment.assigned_vehicle.id }}" data-id="{{ assignment.assigned_vehicle.id}}">VIEW</button>
                                 <button class="btn btn-danger btn-sm delete-btn delete-vehicle"  id="delete-assignment" data-id="${data}">DELETE</button>
                             </div>`;
                     },
@@ -626,29 +628,54 @@
         });
 
         // Create Maintenance Request
+        // Create Maintenance Request
         $("#addMaintenanceForm").submit(function(e) {
-            e.preventDefault();
-            let formData = new FormData(this);
+    e.preventDefault(); // Prevent the form from submitting the traditional way
+    let formData = new FormData(this);  // Prepare form data for submission
 
-            $.ajax({
-                url: "/transport/create-new-maintenance-request/",
-                type: "POST",
-                data: formData,
-                processData: false,
-                contentType: false,
-                headers: { "X-CSRFToken": getCookie("csrftoken") },
-                success: function(response) {
-                    alert(response.message);
-                    $("#addVehicleModal").modal("hide");  // Close modal
-                    $("#addMaintenanceForm")[0].reset();  // Reset form
-                    table.ajax.reload();  // Reload table
-                },
-                error: function(xhr) {
-                    console.error("Error:", xhr.responseText);
-                    alert("Failed to create request: " + xhr.responseText);
-                }
+    $.ajax({
+        url: "/transport/create-new-maintenance-request/", // The URL for the AJAX request
+        type: "POST",  // Method type (POST)
+        data: formData,  // The form data to be sent
+        processData: false,  // Don't process the data (since it's a FormData object)
+        contentType: false,  // Let jQuery set the content-type
+        headers: { "X-CSRFToken": getCookie("csrftoken") }, // CSRF token for security
+        success: function(response) {
+            if (response.success) {
+                // If the backend returns a success response
+                Swal.fire({
+                    title: 'Success!',
+                    text: response.message,  // Message returned by the backend
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    // Reset form, close modal, and reload table upon success
+                    $("#addVehicleModal").modal("hide");
+                    $("#addMaintenanceForm")[0].reset();
+                    table.ajax.reload();  // Reload the table with updated data
+                });
+            } else {
+                // If the response indicates an error, display it using SweetAlert
+                Swal.fire({
+                    title: 'Error!',
+                    text: response.message,  // Error message from the backend
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        },
+        error: function(xhr) {
+            // If there's an AJAX request failure, display this error
+            Swal.fire({
+                title: 'Oops!',
+                text: "Failed to create request: " + xhr.responseText,  // Show the error message from the server
+                icon: 'error',
+                confirmButtonText: 'OK'
             });
-        });
+        }
+    });
+});
+
 
 
         function getCookie(name) {

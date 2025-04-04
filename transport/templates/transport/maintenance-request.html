@@ -53,6 +53,156 @@
                         </div>
                     </div>
                 </div>
+                <div class="modal fade" id="addInventoryRequestModal" tabindex="-1" aria-labelledby="addInventoryRequestModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addInventoryRequestModalLabel">Request Inventory Item</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form method="POST" enctype="multipart/form-data" id="addInventoryRequestForm" >
+                                    {% csrf_token %}
+                                    <div class="row">
+                                        <!-- Inventory Item -->
+                                        <div class="col-md-6">
+                                            <label class="form-label">Inventory Item</label>
+                                            <select name="inventory_item" id="inventory_item" class="form-control" required>
+                                                <option value="">Select Item</option>
+                                                {% for item in inventories %}
+                                                <option value="{{ item.id }}" data-category="{{ item.category }}" 
+                                                        data-description="{{ item.description }}" data-quantity="{{ item.quantity }}">
+                                                    {{ item.name }}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <!-- Category (Auto-filled) -->
+                                        <div class="col-md-6">
+                                            <label class="form-label">Category</label>
+                                            <input type="text" id="category" class="form-control" readonly>
+                                        </div>
+                                        <!-- Description (Auto-filled) -->
+                                        <div class="col-md-6">
+                                            <label class="form-label">Description</label>
+                                            <textarea id="description" class="form-control" readonly></textarea>
+                                        </div>
+                                        <!-- Available Quantity (Auto-filled) -->
+                                        <div class="col-md-6">
+                                            <label class="form-label">Available Quantity</label>
+                                            <input type="number" id="available_quantity" class="form-control" readonly>
+                                        </div>
+                                        <!-- Requested Quantity -->
+                                        <div class="col-md-6">
+                                            <label class="form-label">Requested Quantity</label>
+                                            <input type="number" name="requested_quantity" class="form-control" required>
+                                        </div>
+                                        <!-- From Department -->
+                                        <div class="col-md-6">
+                                            <label class="form-label">From</label>
+                                            <select name="from_department" class="form-control" required>
+                                                <option value="">Select Department</option>
+                                                {% for department in departments %}
+                                                <option value="{{ department.id }}">{{ department.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <!-- To Department -->
+                                        <div class="col-md-6">
+                                            <label class="form-label">Department</label>
+                                            <select name="to_department" class="form-control">
+                                                <option value="">Select Department</option>
+                                                {% for department in departments %}
+                                                <option value="{{ department.id }}">{{ department.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <!-- Employee Name -->
+                                        <div class="col-md-6">
+                                            <label class="form-label">Employee Name</label>
+                                            <select name="employee" id="employee" class="form-control" required>
+                                                <option value="">Select Employee</option>
+                                                {% for emp in employees %}
+                                                <option value="{{ emp.id }}" 
+                                                        data-phone="{{ emp.phone }}"
+                                                        data-gender="{{ emp.gender }}"
+                                                        data-position="{{ emp.position }}"
+                                                        data-ghcard="{{ emp.ghana_card }}">
+                                                    {{ emp.employee_name }}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <!-- Employee Phone (Auto-filled) -->
+                                        <div class="col-md-6">
+                                            <label class="form-label">Employee Phone</label>
+                                            <input type="text" id="employee_phone" class="form-control" readonly>
+                                        </div>
+                                        <!-- Gender (Auto-filled) -->
+                                        <div class="col-md-6">
+                                            <label class="form-label">Gender</label>
+                                            <input type="text" id="employee_gender" class="form-control" readonly>
+                                        </div>
+                                        <!-- Ghana Card Number (Auto-filled) -->
+                                        <div class="col-md-6">
+                                            <label class="form-label">Ghana Card Number</label>
+                                            <input type="text" id="ghana_card" class="form-control" readonly>
+                                        </div>
+                                        <!-- Position (Auto-filled) -->
+                                        <div class="col-md-6">
+                                            <label class="form-label">Position</label>
+                                            <input type="text" id="employee_position" class="form-control" readonly>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label">Vehicle</label>
+                                            <input type="text" id="vehicle" class="form-control" >
+                                        </div>
+                                        <!-- Transaction Status -->
+                                        <div class="col-md-6">
+                                            <label class="form-label">Transaction Status</label>
+                                            <select name="transaction_type" class="form-control" required>
+                                                <option value="pending">Pending</option>
+                                                <option value="approved">Approved</option>
+                                                <option value="rejected">Rejected</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="text-end mt-3" style="display: flex;align-items: center;justify-content: center;">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save"></i> Save Request
+                                        </button><var></var>
+                                        
+                                        <!-- <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                            <i class="fas fa-times"></i> Cancel
+                                        </button> -->
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <script>
+                // Auto-fill inventory details
+                document.getElementById("inventory_item").addEventListener("change", function() {
+                    let selected = this.options[this.selectedIndex];
+                    document.getElementById("category").value = selected.getAttribute("data-category");
+                    document.getElementById("description").value = selected.getAttribute("data-description");
+                    document.getElementById("available_quantity").value = selected.getAttribute("data-quantity");
+                });
+                
+                // Auto-fill employee details
+                document.getElementById("employee").addEventListener("change", function() {
+                    let selected = this.options[this.selectedIndex];
+                    document.getElementById("employee_phone").value = selected.getAttribute("data-phone");
+                    document.getElementById("employee_gender").value = selected.getAttribute("data-gender");
+                    document.getElementById("ghana_card").value = selected.getAttribute("data-ghcard");
+                    document.getElementById("employee_position").value = selected.getAttribute("data-position");
+                });
+                </script>
+            </div>
+
 
 <!-- Add Dispatch Request Modal -->
 <div class="modal fade" id="addVehicleModal" tabindex="-1" aria-labelledby="addMaintenanceModalLabel" aria-hidden="true">
@@ -112,13 +262,14 @@
                         </div>
                     </div>
 
-                    <div class="text-end mt-3">
+                    <div class="text-end mt-3" style="display: flex;align-items: center;justify-content: center;">
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save"></i> Save Request
-                        </button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        </button><var></var>
+                        
+                        <!-- <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                             <i class="fas fa-times"></i> Cancel
-                        </button>
+                        </button> -->
                     </div>
                 </form>
             </div>
@@ -192,149 +343,8 @@
         </div>
                 
     </div>
+</div>
 
-    <div class="modal fade" id="addInventoryRequestModal" tabindex="-1" aria-labelledby="addInventoryRequestModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addInventoryRequestModalLabel">Request Inventory Item</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form method="POST" enctype="multipart/form-data" id="addInventoryRequestForm" >
-                        {% csrf_token %}
-                        <div class="row">
-                            <!-- Inventory Item -->
-                            <div class="col-md-6">
-                                <label class="form-label">Inventory Item</label>
-                                <select name="inventory_item" id="inventory_item" class="form-control" required>
-                                    <option value="">Select Item</option>
-                                    {% for item in inventories %}
-                                    <option value="{{ item.id }}" data-category="{{ item.get_category_display }}" 
-                                            data-description="{{ item.description }}" data-quantity="{{ item.quantity }}">
-                                        {{ item.name }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <!-- Category (Auto-filled) -->
-                            <div class="col-md-6">
-                                <label class="form-label">Category</label>
-                                <input type="text" id="category" class="form-control" readonly>
-                            </div>
-                            <!-- Description (Auto-filled) -->
-                            <div class="col-md-6">
-                                <label class="form-label">Description</label>
-                                <textarea id="description" class="form-control" readonly></textarea>
-                            </div>
-                            <!-- Available Quantity (Auto-filled) -->
-                            <div class="col-md-6">
-                                <label class="form-label">Available Quantity</label>
-                                <input type="number" id="available_quantity" class="form-control" readonly>
-                            </div>
-                            <!-- Requested Quantity -->
-                            <div class="col-md-6">
-                                <label class="form-label">Requested Quantity</label>
-                                <input type="number" name="requested_quantity" class="form-control" required>
-                            </div>
-                            <!-- From Department -->
-                            <div class="col-md-6">
-                                <label class="form-label">From</label>
-                                <select name="from_department" class="form-control" required>
-                                    <option value="">Select Department</option>
-                                    {% for department in departments %}
-                                    <option value="{{ department.id }}">{{ department.name }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <!-- To Department -->
-                            <div class="col-md-6">
-                                <label class="form-label">Department</label>
-                                <select name="to_department" class="form-control">
-                                    <option value="">Select Department</option>
-                                    {% for department in departments %}
-                                    <option value="{{ department.id }}">{{ department.name }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <!-- Employee Name -->
-                            <div class="col-md-6">
-                                <label class="form-label">Employee Name</label>
-                                <select name="employee" id="employee" class="form-control" required>
-                                    <option value="">Select Employee</option>
-                                    {% for emp in employees %}
-                                    <option value="{{ emp.id }}" 
-                                            data-phone="{{ emp.phone }}"
-                                            data-gender="{{ emp.gender }}"
-                                            data-position="{{ emp.position }}"
-                                            data-ghcard="{{ emp.ghana_card }}">
-                                        {{ emp.employee_name }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <!-- Employee Phone (Auto-filled) -->
-                            <div class="col-md-6">
-                                <label class="form-label">Employee Phone</label>
-                                <input type="text" id="employee_phone" class="form-control" readonly>
-                            </div>
-                            <!-- Gender (Auto-filled) -->
-                            <div class="col-md-6">
-                                <label class="form-label">Gender</label>
-                                <input type="text" id="employee_gender" class="form-control" readonly>
-                            </div>
-                            <!-- Ghana Card Number (Auto-filled) -->
-                            <div class="col-md-6">
-                                <label class="form-label">Ghana Card Number</label>
-                                <input type="text" id="ghana_card" class="form-control" readonly>
-                            </div>
-                            <!-- Position (Auto-filled) -->
-                            <div class="col-md-6">
-                                <label class="form-label">Position</label>
-                                <input type="text" id="employee_position" class="form-control" readonly>
-                            </div>
-                            <!-- Transaction Status -->
-                            <div class="col-md-6">
-                                <label class="form-label">Transaction Status</label>
-                                <select name="transaction_type" class="form-control" r readonly>
-                                    <option value="pending">Pending</option>
-                                    <option value="approved">Approved</option>
-                                    <option value="rejected">Rejected</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="text-end mt-3">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Submit Request
-                            </button>
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                <i class="fas fa-times"></i> Cancel
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <script>
-    // Auto-fill inventory details
-    document.getElementById("inventory_item").addEventListener("change", function() {
-        let selected = this.options[this.selectedIndex];
-        document.getElementById("category").value = selected.getAttribute("data-category");
-        document.getElementById("description").value = selected.getAttribute("data-description");
-        document.getElementById("available_quantity").value = selected.getAttribute("data-quantity");
-    });
-
-    // Auto-fill employee details
-    document.getElementById("employee").addEventListener("change", function() {
-        let selected = this.options[this.selectedIndex];
-        document.getElementById("employee_phone").value = selected.getAttribute("data-phone");
-        document.getElementById("employee_gender").value = selected.getAttribute("data-gender");
-        document.getElementById("ghana_card").value = selected.getAttribute("data-ghcard");
-        document.getElementById("employee_position").value = selected.getAttribute("data-position");
-    });
-    </script>
 
 
  <!-- Include DataTables and jQuery -->
@@ -353,6 +363,7 @@
  <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
  <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
  <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.colVis.min.js"></script>
+ <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
  <div class="modal fade" id="descriptionModal" tabindex="-1" aria-labelledby="descriptionModalLabel" aria-hidden="true">
@@ -469,16 +480,23 @@ document.addEventListener("DOMContentLoaded", function () {
             { data: "created_at", render: (data) => data ? data.toUpperCase() : "" },
             {
                 data: "id",
-                render: function (data) {
+                render: function (data, type, row) {
                     return `
                         <div style="display: flex; justify-content: center; align-items: center; gap: 3px;">
-                            
-                            <button class="btn btn-info btn-sm request-btn" data-bs-toggle="modal" data-bs-target=#addInventoryRequestModal data-id="${data}">REQUEST INVENTORY</button>
+                            <button class="btn btn-sm btn-primary btn-sm request-btn"
+                                data-bs-toggle="modal"
+                                data-bs-target="#addInventoryRequestModal"
+                                data-id="${data}"
+                                data-vehicle-id="${row.vehicle_id || ''}">
+                                REQUEST INVENTORY
+                            </button>
+
                             <button class="btn btn-danger btn-sm delete-btn" data-id="${data}">DELETE</button>
                         </div>
                     `;
                 }
             }
+
         ],
         lengthMenu: [10, 25, 50, 100],
         pageLength: 10,
@@ -501,17 +519,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 
-    $(".request-btn").on("click", function() {
-        // Get vehicle data from the button's data attributes
-        let vehicleLicense = $(this).data("license");
-        let vehicleModel = $(this).data("model");
-        let vehicleMake = $(this).data("make");
-
-        // Autofill the modal fields
-        $("#vehicleLicense").val(vehicleLicense);
-        $("#vehicleModel").val(vehicleModel);
-        $("#vehicleMake").val(vehicleMake);
-    });
+    
 
     // Handle form submission (you can adjust this part to your needs)
     $("#inventoryRequestForm").submit(function(e) {
@@ -672,6 +680,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Open Edit Inventory Modal
     $(document).on("click", ".edit-inventory", function () {
         let inventoryId = $(this).data("id");
+        console.log(inventoryId);
 
         $.ajax({
             url: `/inventory/api/items/${inventoryId}/`,
@@ -699,46 +708,118 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    // Handle Inventory Request Submission
-    $("#addInventoryRequestModal").submit(function (event) {
-        event.preventDefault();
-        
-        // Prepare the form data
-        let formData = {
-            item: $("#inventory_item").val(),
-            requested_quantity: $("input[name='requested_quantity']").val(),
-            from_department: $("select[name='from_department']").val(),
-            to_department: $("select[name='to_department']").val(),
-            employee: $("#employee").val(),
-            transaction_type: $("select[name='transaction_type']").val(),
-            category: $("#category").val(),
-            description: $("#description").val(),
-            quantity: $("#available_quantity").val(),
-            employee_name: $("#employee option:selected").text(),
-            employee_phone: $("#employee_phone").val(),
-            employee_ghana_card_number: $("#ghana_card").val(),
-            employee_position: $("#employee_position").val(),
-            remarks: ''
-        };
+   
+let selectedVehicleId = null;
+console.log(selectedVehicleId);
+$(document).ready(function () {
+    
 
-        $.ajax({
-            url: "/inventory/add-request-inventory/",
-            type: "POST",
-            data: JSON.stringify(formData),
-            contentType: "application/json",
-            success: function (response) {
-                if (response.status === 'success') {
-                    alert(response.message);
-                    $('#inventoryTable').DataTable().ajax.reload();
-                } else {
-                    alert(response.message);
-                }
-            },
-            error: function (err) {
-                alert('Error: ' + err.responseText);
-            }
+    $(document).on("click", ".request-btn", function () {
+            let maintenanceId = $(this).data("id"); // Get MaintenanceRequest ID
+            console.log("Selected Maintenance ID:", maintenanceId);
+
+            // Fetch vehicle details based on Maintenance Request ID
+            $.ajax({
+                url: `/transport/api/get-maintenance/${maintenanceId}/`, // Django API Endpoint
+                type: "GET",
+                    success: function (response) {
+                        console.log("Fetched Data:", response); // Log the entire response
+
+                        if (response.status === "success") {
+                            let vehicle = response.maintenance_request.vehicle; // Extract vehicle data
+                            selectedVehicleId = vehicle.id; // Store Vehicle ID
+
+                            console.log("Vehicle ID:", selectedVehicleId);
+                            console.log("License Plate:", vehicle.license_plate);
+                            console.log("Model:", vehicle.model);
+                            console.log("Make:", vehicle.make);
+
+                            // ✅ Autofill the "Vehicle" field with the License Plate
+                            $("#vehicle").val(vehicle.license_plate);
+
+                        } else {
+                            console.error("Error Response:", response.message);
+                            Swal.fire("Error", response.message, "error");
+                        }
+                    },
+                    error: function (err) {
+                        console.error("AJAX Error:", err);
+                        Swal.fire("Error", "Could not retrieve vehicle details: " + err.responseText, "error");
+                    }
+                });
+            });
         });
-    });
+
+
+    // Handle Inventory Request Submission
+    // Handle Inventory Request Submission
+        $("#addInventoryRequestForm").submit(function (event) {
+            event.preventDefault();
+
+            if (!selectedVehicleId) {
+                Swal.fire("Error", "Vehicle ID is missing!", "error");
+                return;
+            }
+
+            let formData = {
+                item: $("#inventory_item").val(),
+                requested_quantity: $("input[name='requested_quantity']").val(),
+                from_department: $("select[name='from_department']").val(),
+                to_department: $("select[name='to_department']").val(),
+                employee: $("#employee").val(),
+                transaction_type: $("select[name='transaction_type']").val(),
+                category: $("#category").val(),
+                description: $("#description").val(),
+                quantity: $("#available_quantity").val(),
+                employee_name: $("#employee option:selected").text(),
+                employee_phone: $("#employee_phone").val(),
+                employee_ghana_card_number: $("#ghana_card").val(),
+                employee_position: $("#employee_position").val(),
+                remarks: '',
+                vehicle: selectedVehicleId // Ensure vehicle ID is sent
+            };
+
+            console.log("🔍 Form Data Being Sent:", formData); // ✅ Debugging Log
+
+            // Confirm Submission with SweetAlert
+            Swal.fire({
+                title: "Confirm Submission",
+                text: "Are you sure you want to submit this inventory request?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes, submit",
+                cancelButtonText: "Cancel"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "/transport/inventory-request/add/",
+                        type: "POST",
+                        data: JSON.stringify(formData),
+                        contentType: "application/json",
+                        success: function (response) {
+                            console.log("✅ Server Response:", response); // ✅ Debugging Log
+                            if (response.status === "success") {
+                                Swal.fire({
+                                    title: "Success!",
+                                    text: response.message,
+                                    icon: "success"
+                                }).then(() => {
+                                    $('#inventoryTable').DataTable().ajax.reload();
+                                });
+                            } else {
+                                Swal.fire("Error", response.message, "error");
+                            }
+                        },
+                        error: function (err) {
+                            console.error("❌ AJAX Error:", err.responseText); // ✅ Debugging Log
+                            Swal.fire("Error", "Something went wrong: " + err.responseText, "error");
+                        }
+                    });
+                }
+            });
+        });
+
+
 
     // Update Inventory Request
     function updateInventoryRequest(data) {

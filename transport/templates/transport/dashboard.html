@@ -70,37 +70,53 @@
 </head>
 <body>
     
-        <div class="row">
-            <div class="col-md-3">
-                <div class="card bg-danger-subtle" style="background: url('/static/images/dashboard/dashboard-shape-1.png'); background-repeat: no-repeat; background-position: bottom center; "">
-                    <h5>Total Vehicles</h5>
-                    <h3 id="total-vehicles">0</h3>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card bg-info-subtle" style="background: url('/static/images/dashboard/dashboard-shape-1.png'); background-repeat: no-repeat; background-position: bottom center; ">
-                    <h5>Total Drivers</h5>
-                    <h3 id="total-drivers">0</h3>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card bg-success-subtle" style="background: url('/static/images/dashboard/dashboard-shape-1.png'); background-repeat: no-repeat; background-position: bottom center; ">
-                    <h5>Active Assignments</h5>
-                    <h3 id="total-assignments">0</h3>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card bg-primary-subtle" style="background: url('/static/images/dashboard/dashboard-shape-1.png'); background-repeat: no-repeat; background-position: bottom center; ">
-                    <h5>Maintenance Requests</h5>
-                    <h3 id="maintenance-requests">0</h3>
-                </div>
+    <div class="row">
+        <!-- Total Vehicles -->
+        <div class="col-md-3">
+            <div class="card bg-danger-subtle p-3 text-dark shadow-sm rounded-3"
+                 style="background: url('/static/images/dashboard/dashboard-shape-1.png') no-repeat bottom center;">
+                <h5 class="fw-semibold mb-1">Total Vehicles</h5>
+                <h3 id="total-vehicles" class="fw-bold text-danger">0</h3>
+                <p class="mb-0 text-muted fs-14">Fleet currently registered in the system.</p>
             </div>
         </div>
+    
+        <!-- Total Drivers -->
+        <div class="col-md-3">
+            <div class="card bg-info-subtle p-3 text-dark shadow-sm rounded-3"
+                 style="background: url('/static/images/dashboard/dashboard-shape-1.png') no-repeat bottom center;">
+                <h5 class="fw-semibold mb-1">Total Drivers</h5>
+                <h3 id="total-drivers" class="fw-bold text-info">0</h3>
+                <p class="mb-0 text-muted fs-14">Verified drivers assigned to tasks.</p>
+            </div>
+        </div>
+    
+        <!-- Active Assignments -->
+        <div class="col-md-3">
+            <div class="card bg-success-subtle p-3 text-dark shadow-sm rounded-3"
+                 style="background: url('/static/images/dashboard/dashboard-shape-1.png') no-repeat bottom center;">
+                <h5 class="fw-semibold mb-1">Active Assignments</h5>
+                <h3 id="total-assignments" class="fw-bold text-success">0</h3>
+                <p class="mb-0 text-muted fs-14">Ongoing transport or delivery tasks.</p>
+            </div>
+        </div>
+    
+        <!-- Maintenance Requests -->
+        <div class="col-md-3">
+            <div class="card bg-primary-subtle p-3 text-dark shadow-sm rounded-3"
+                 style="background: url('/static/images/dashboard/dashboard-shape-1.png') no-repeat bottom center;">
+                <h5 class="fw-semibold mb-1">Maintenance Requests</h5>
+                <h3 id="maintenance-requests" class="fw-bold text-primary">0</h3>
+                <p class="mb-0 text-muted fs-14">Pending or approved service requests.</p>
+            </div>
+        </div>
+    </div>
+    
     
         <!-- Charts Section -->
         <div class="row">
             <div class="col-md-6">
-                <div class="chart-container" style="width: 610x;height: 450px;display: flex;justify-content: center;align-items: center;flex-direction: column;" >
+                <div class="chart-container" style="width: 510x;height: 430px;display: flex;justify-content: center;align-items: center;flex-direction: column;" >
                     <h5>Vehicle Status Overview</h5>
                     <canvas id="vehicleStatusChart"></canvas>
                 </div>

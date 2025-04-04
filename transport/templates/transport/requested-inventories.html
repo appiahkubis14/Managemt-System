@@ -100,7 +100,7 @@
                                             <select name="inventory_item" id="inventory_item" class="form-control" required>
                                                 <option value="">Select Item</option>
                                                 {% for item in inventories %}
-                                                <option value="{{ item.id }}" data-category="{{ item.get_category_display }}" 
+                                                <option value="{{ item.id }}" data-category="{{ item.category }}" 
                                                         data-description="{{ item.description }}" data-quantity="{{ item.quantity }}">
                                                     {{ item.name }}
                                                 </option>

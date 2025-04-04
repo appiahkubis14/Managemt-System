@@ -235,31 +235,38 @@ def add_employee(request):
         except Exception as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from .models import Employee
+
+import traceback
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from .models import Employee
+
 def get_employee(request, employee_id):
     """Retrieve details of a specific employee."""
     try:
         employee = get_object_or_404(Employee, id=employee_id)
         user = employee.user  # Access associated User model
 
+        # Prepare the employee data
         data = {
             "id": employee.id,
             "username": user.username,
             "email": user.email,
-            "role": user.role,
+            "role": user.role,  # This accesses the role from the User model
             "employee_name": employee.employee_name,
-            "date_of_birth": employee.date_of_birth.strftime("%Y-%m-%d") if employee.date_of_birth else "",
-            "joining_date": employee.date_of_join.strftime("%Y-%m-%d") if employee.date_of_join else "",
+            "date_of_birth": employee.date_of_birth.strftime("%Y-%m-%d") if employee.date_of_birth else None,
+            "joining_date": employee.date_of_join.strftime("%Y-%m-%d") if employee.date_of_join else None,
             "gender": employee.gender,
             "ghana_card": employee.ghana_card,
             "phone": employee.phone,
-            "phone_2": employee.phone_2,
+            # "phone_2": employee.phone_2,
             "department": employee.department,
             "position": employee.position,
-            "hire_date": employee.hire_date.strftime("%Y-%m-%d") if employee.hire_date else "",
+            "hire_date": employee.hire_date.strftime("%Y-%m-%d") if employee.hire_date else None,
             "salary": employee.salary,
-            "license_number": "",
-            "license_expiry_date": "",
-            "profile_picture": employee.photo.url if employee.photo else "",
         }
 
         # Include license details if the employee is a driver
@@ -268,14 +275,23 @@ def get_employee(request, employee_id):
             data["license_expiry_date"] = (
                 employee.driver.license_expiry_date.strftime("%Y-%m-%d")
                 if employee.driver.license_expiry_date
-                else ""
+                else None
             )
+        print(data)
 
+        # Return the data as JSON response
         return JsonResponse(data)
 
     except Exception as e:
-        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+        # Capture and log the full exception details
+        error_message = str(e)
+        error_traceback = traceback.format_exc()  # Get the full traceback
+        
+        print(f"Error Message: {error_message}")
+        print(f"Stack Trace: {error_traceback}")  # Print the full traceback to console
 
+        # Return the error message in the response
+        return JsonResponse({"status": "error", "message": error_message, "traceback": error_traceback}, status=500)
 
 
 
@@ -318,11 +334,11 @@ def update_employee(request, id):
             return JsonResponse({"status": "error", "message": str(e)})
 
 @csrf_exempt
-def delete_employee(request, id):
+def delete_employee(request, employee_id):
     """Delete an employee."""
     if request.method == "POST":
         try:
-            employee = get_object_or_404(Employee, id=id)
+            employee = get_object_or_404(Employee, id=employee_id)
             employee.delete()
             return JsonResponse({"status": "success", "message": "Employee deleted successfully!"})
         except Exception as e:

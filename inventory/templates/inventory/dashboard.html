@@ -84,32 +84,42 @@
                         </div>
                         <div class="card-body">
                             <div class="row">
+                                <!-- Left side: Inventory Items -->
                                 <div class="col-sm-6">
-                                    {% for inventory in inventories|slice:":4" %}
-                                    <div class="row mb-2">
-                                        <div class="col-6">
-                                            <div>
-                                                <p><i class="mdi mdi-package-variant text-warning me-2"></i> {{ inventory.category }} 
-                                                    <span class="text-muted fs-14"> ({{ inventory.quantity }})</span>
-                                                </p>
-                                            </div>
-                                        </div>
+                                    <div class="d-flex flex-wrap">
+                                        {% for inventory in inventories %}
+                                            {% if forloop.first or forloop.counter0|divisibleby:4 %}
+                                                <div class="me-3 mb-3" style="min-width: 150px;">
+                                            {% endif %}
+                                                    <p class="mb-1">
+                                                        <i class="mdi mdi-package-variant text-warning me-2"></i>
+                                                        {{ inventory.category }}
+                                                        <span class="text-muted fs-14">({{ inventory.quantity }})</span>
+                                                    </p>
+                                            {% if forloop.counter|divisibleby:4 or forloop.last %}
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
                                     </div>
-                                    {% endfor %}
                                 </div>
+                
+                                <!-- Right side: Chart -->
                                 <div class="col-sm-6">
                                     <div>
-                                        <div id="inventory_chart" class="apex-charts" data-colors='["--bs-primary", "--bs-success", "--bs-warning"]' dir="ltr"></div>
+                                        <div id="inventory_chart" class="apex-charts"
+                                            data-colors='["--bs-primary", "--bs-success", "--bs-warning"]' dir="ltr">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+                
             
                 <!-- Recent Activities (Employees) -->
                 <div class="col-xl-4">
-                    <div class="card" style="overflow-y: auto; height: 304px;" data-simplebar="init">
+                    <div class="card" style="overflow-y: auto; height: 310px;" data-simplebar="init">
                         <div class="card-header card-header-bordered">
                             <div class="card-icon text-muted"><i class="fa fa-clipboard-list fs-14"></i></div>
                             <h3 class="card-title">Recent Employee Activities</h3>
@@ -146,10 +156,13 @@
             {% comment %} Order Progress {% endcomment %}
             <div class="row">
                 <div class="col-12">
-                    <div class="card" style="height: 495px; overflow: hidden auto;" data-simplebar="init">
-                        <div class="card-header">
+                    <div class="card" style="height: 620px; overflow: hidden auto;padding: 15px;" data-simplebar="init">
+                        <div class="card-header" style="display: flex;justify-content: center;align-items: center;">
                             <div class="card-icon text-muted"><i class="fas fa-sync-alt fs-14"></i></div>
-                            <h3 class="card-title">Order Progress</h3>
+                            <div >
+                                <h3 class="card-title">ALL INVENTORIES REQUESTS</h3>
+                            </div>
+                            
                             <div class="card-addon dropdown">
                                 <button class="btn btn-label-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown"> <i class="fas fa-filter fs-12 align-middle ms-1"></i></button>
                                 <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated">
@@ -338,7 +351,7 @@
                             <div class="card-icon">
                                 <i class="fas fa-calendar-alt fs-14 text-muted"></i>
                             </div>
-                            <h4 class="card-title mb-0">Monthly Inventory</h4>
+                            <h4 class="card-title mb-0">Monthly Inventory Overview</h4>
                         </div>
                         <div class="card-body">
                             <div id="monthly_inventory_chart" data-colors='["--bs-primary", "--bs-warning", "--bs-info"]' class="apex-charts" dir="ltr"></div>
@@ -356,17 +369,139 @@
                             }],
                             chart: {
                                 type: "bar",
-                                height: 350
+                                height: 350,
+                                toolbar: {
+                                    show: true,
+                                    tools: {
+                                        download: true,
+                                        selection: true,
+                                        zoom: true,
+                                        zoomin: true,
+                                        zoomout: true,
+                                        pan: true,
+                                        reset: true
+                                    }
+                                },
+                                animations: {
+                                    enabled: true,
+                                    easing: 'easeinout',
+                                    speed: 800,
+                                    animateGradually: {
+                                        enabled: true,
+                                        delay: 150
+                                    },
+                                    dynamicAnimation: {
+                                        enabled: true,
+                                        speed: 350
+                                    }
+                                }
                             },
+                            plotOptions: {
+                                bar: {
+                                    borderRadius: 8,
+                                    columnWidth: '50%',
+                                    distributed: true,
+                                    dataLabels: {
+                                        position: 'top' // top, center, bottom
+                                    }
+                                }
+                            },
+                            dataLabels: {
+                                enabled: true,
+                                formatter: function (val) {
+                                    return val;
+                                },
+                                offsetY: -20,
+                                style: {
+                                    fontSize: '13px',
+                                    colors: ['#304758']
+                                }
+                            },
+                            fill: {
+                                type: 'gradient',
+                                gradient: {
+                                    shade: 'dark',
+                                    type: "vertical",
+                                    shadeIntensity: 0.5,
+                                    gradientToColors: undefined,
+                                    inverseColors: true,
+                                    opacityFrom: 0.9,
+                                    opacityTo: 0.6,
+                                    stops: [0, 100]
+                                }
+                            },
+                            colors: ["#4e73df", "#1cc88a", "#36b9cc", "#f6c23e", "#e74a3b", "#858796"],
                             xaxis: {
-                                categories: [{% for item in monthly_inventory %} "{{ item.month|date:'F Y' }}", {% endfor %}]
-                            }
+                                categories: [{% for item in monthly_inventory %} "{{ item.month|date:'F Y' }}", {% endfor %}],
+                                position: 'bottom',
+                                labels: {
+                                    rotate: -45,
+                                    style: {
+                                        fontSize: '13px',
+                                        colors: '#6c757d'
+                                    }
+                                },
+                                axisBorder: {
+                                    show: true,
+                                    color: '#e0e0e0'
+                                },
+                                axisTicks: {
+                                    show: true,
+                                    color: '#e0e0e0'
+                                }
+                            },
+                            yaxis: {
+                                title: {
+                                    text: 'Items Added',
+                                    style: {
+                                        fontSize: '14px',
+                                        color: '#6c757d'
+                                    }
+                                },
+                                labels: {
+                                    style: {
+                                        colors: '#6c757d'
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                theme: "dark",
+                                style: {
+                                    fontSize: '14px'
+                                },
+                                y: {
+                                    formatter: function (val) {
+                                        return val + " items added";
+                                    }
+                                }
+                            },
+                            legend: {
+                                show: false
+                            },
+                            grid: {
+                                borderColor: '#f1f1f1',
+                                strokeDashArray: 4
+                            },
+                            responsive: [{
+                                breakpoint: 768,
+                                options: {
+                                    chart: {
+                                        height: 300
+                                    },
+                                    xaxis: {
+                                        labels: {
+                                            rotate: -30
+                                        }
+                                    }
+                                }
+                            }]
                         };
-
+                
                         var chart = new ApexCharts(document.querySelector("#monthly_inventory_chart"), options);
                         chart.render();
                     });
                 </script>
+                
 
 
                 {% comment %} End Monthly Sales {% endcomment %}

@@ -705,8 +705,15 @@ def delete_assignment(request, assignment_id):
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .models import DriverVehicleAssignment, Driver, DriverAssistant, Vehicle
+from .models import DriverVehicleAssignment, Driver, DriverAssistant, Vehicle,AssistantDriverVehicleAssignment
 from django.utils import timezone
+
+from django.http import JsonResponse
+
+from django.http import JsonResponse
+from django.shortcuts import redirect
+from .models import Driver, DriverAssistant, Vehicle, CurrentVehicleAssignment
+from django.contrib import messages
 
 def create_vehicle_assignment(request):
     if request.method == "POST":
@@ -716,18 +723,24 @@ def create_vehicle_assignment(request):
 
         # Validate the input
         if not driver_id or not vehicle_id:
-            messages.error(request, "Driver and Vehicle are required!")
-            return redirect("driver_assistant_assignment")
+            return JsonResponse({"success": False, "message": "Driver and Vehicle are required!"})
 
         try:
             driver = Driver.objects.get(id=driver_id)
             vehicle = Vehicle.objects.get(id=vehicle_id)
             assistant = DriverAssistant.objects.get(id=assistant_id) if assistant_id else None
 
+            # Check if the driver is already assigned to a vehicle
+            if DriverVehicleAssignment.objects.filter(driver=driver).exists():
+                return JsonResponse({"success": False, "message": f"Driver {driver.name} is already assigned to a vehicle!"})
+
+            # Check if the assistant is already assigned to a vehicle
+            if AssistantDriverVehicleAssignment.objects.filter(driver_assistant=assistant).exists() if assistant else False:
+                return JsonResponse({"success": False, "message": f"Assistant {assistant.name} is already assigned to a vehicle!"})
+
             # Check if the vehicle is already assigned
-            if DriverVehicleAssignment.objects.filter(assigned_vehicle=vehicle).exists():
-                messages.error(request, "This vehicle is already assigned!")
-                return redirect("driver_assistant_assignment_page")
+            if CurrentVehicleAssignment.objects.filter(vehicle=vehicle).exists():
+                return JsonResponse({"success": False, "message": f"This vehicle {vehicle.license_plate} is already assigned!"})
 
             # Create the assignment
             assignment = CurrentVehicleAssignment.objects.create(
@@ -737,14 +750,14 @@ def create_vehicle_assignment(request):
                 updated_at=timezone.now()
             )
 
-            messages.success(request, "Vehicle assigned successfully!")
-            return redirect("driver_assistant_assignment_page")
+            return JsonResponse({"success": True, "message": "Vehicle assigned successfully!"})
 
         except (Driver.DoesNotExist, Vehicle.DoesNotExist, DriverAssistant.DoesNotExist):
-            messages.error(request, "Invalid selection!")
-            return redirect("add_assignment")
+            return JsonResponse({"success": False, "message": "Invalid selection!"})
 
-    return redirect("driver_assistant_assignment_page")
+    return JsonResponse({"success": False, "message": "Invalid request method!"})
+
+
 
 
 def update_vehicle_assignment(request, pk):
@@ -998,6 +1011,7 @@ def inventory_view(request):
     inventories = InventoryItem.objects.all()  # Fetch all inventory items
     categories = ItemCategory.choices
     departments = Department.objects.all()
+    print(inventories)
 
     context = {
         "path": request.path if request.path else "",
@@ -1060,8 +1074,7 @@ def get_inventory_requests(request):
     return JsonResponse({'data': data})
 
 
-    print(data) 
-    return JsonResponse({'data': data})
+
 def get_inventory_request_detail(request, id):
     """Retrieve a specific inventory request by ID"""
     inventory_request = get_object_or_404(InventoryRequest, id=id)
@@ -1086,85 +1099,133 @@ def get_inventory_request_detail(request, id):
     return JsonResponse(data)
 
 
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+from django.core.exceptions import ValidationError
+from inventory.models import InventoryItem, VehicleInventoryRequest, InventoryTransaction
 
-@csrf_exempt
+
+@csrf_exempt  # Only needed if CSRF token isn't sent via AJAX
 def add_inventory_request(request):
-    """Handle add request for inventory"""
-    if request.method == 'POST':
+    """Handle creating an inventory request"""
+    if request.method == "POST":
         try:
-            data = json.loads(request.body)
-            
-            # Access data using updated keys
-            item = InventoryItem.objects.get(id=data['item'])  # 'item' instead of 'inventory_item'
-            from_department = Department.objects.get(id=data['from_department']) if data['from_department'] else None
-            to_department = Department.objects.get(id=data['to_department']) if data['to_department'] else None
-            employee = Employee.objects.get(id=data['employee']) if data['employee'] else None
-            
-            # Create the InventoryRequest object
-            inventory_request = InventoryRequest(
+            data = json.loads(request.body)  # Parse JSON data
+            print(f"Received Data from new model: {data}")  # Debugging Log (data)
+
+            # Validate and retrieve item
+            item_id = int(data.get("item", 0))
+            item = InventoryItem.objects.filter(id=item_id).first()
+            if not item:
+                return JsonResponse({"status": "error", "message": "Item does not exist"}, status=400)
+
+            # Validate and retrieve departments
+            from_department = Department.objects.filter(id=data.get("from_department")).first()
+            to_department = Department.objects.filter(id=data.get("to_department")).first()
+
+            # Validate and retrieve employee
+            employee = Employee.objects.filter(id=data.get("employee")).first()
+            vehicle = Vehicle.objects.get(id=data['vehicle']) if 'vehicle' in data and data['vehicle'] else None
+
+            # Create inventory request
+            inventory_request = InventoryRequest.objects.create(
                 item=item,
-                category=data['category'],
-                description=data.get('description', ''),
-                quantity=data['requested_quantity'],  # Using 'requested_quantity' instead of 'quantity'
-                transaction_type=data['transaction_type'],
+                category=data.get("category", ""),
+                description=data.get("description", ""),
+                quantity=int(data.get("requested_quantity", 0)),
+                transaction_type=data.get("transaction_type", "pending"),
                 from_department=from_department,
                 to_department=to_department,
                 employee=employee,
-                employee_name=data.get('employee_name', ''),
-                employee_phone=data.get('employee_phone', ''),
-                employee_ghana_card_number=data.get('employee_ghana_card_number', ''),
-                employee_position=data.get('employee_position', ''),
-                remarks=data.get('remarks', '')
+                employee_name=data.get("employee_name", ""),
+                employee_phone=data.get("employee_phone", ""),
+                employee_ghana_card_number=data.get("employee_ghana_card_number", ""),
+                employee_position=data.get("employee_position", ""),
+                remarks=data.get("remarks", ""),
             )
-            inventory_request.save()
 
-            return JsonResponse({'status': 'success', 'message': 'Inventory request added successfully'})
+            if vehicle:
+                VehicleInventoryRequest.objects.create(
+                    vehicle=vehicle,
+                    inventory_item=item,
+                    quantity_requested=int(data.get("requested_quantity", 0)),
+                    transaction_type=data.get("transaction_type", "pending"),
+                    requested_by=employee,
+                    request_status='pending',  # Default to pending
+                )
 
-        except InventoryItem.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'Item does not exist'})
-        except Department.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'Department does not exist'})
-        except ValidationError as e:
-            return JsonResponse({'status': 'error', 'message': str(e)})
+
+            return JsonResponse({"status": "success", "message": "Inventory request added successfully"})
+
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': f'Error: {str(e)}'})
+            return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
+    return JsonResponse({"status": "error", "message": "Invalid request method"}, status=405)
+
+
 
 
 # @csrf_exempt
-# def update_inventory_request(request):
-#     """Handle update request for inventory"""
+# def add_inventory_request(request):
+#     """Handle add request for inventory"""
 #     if request.method == 'POST':
 #         try:
 #             data = json.loads(request.body)
-#             inventory_request = InventoryRequest.objects.get(id=data['id'])
             
-#             inventory_request.item = InventoryItem.objects.get(id=data['item'])
-#             inventory_request.category = data['category']
-#             inventory_request.description = data.get('description', '')
-#             inventory_request.quantity = data['quantity']
-#             inventory_request.transaction_type = data['transaction_type']
-#             inventory_request.from_department = Department.objects.get(id=data['from_department']) if data['from_department'] else None
-#             inventory_request.to_department = Department.objects.get(id=data['to_department']) if data['to_department'] else None
-#             inventory_request.employee = Employee.objects.get(id=data['employee']) if data['employee'] else None
-#             inventory_request.employee_name = data.get('employee_name', '')
-#             inventory_request.employee_phone = data.get('employee_phone', '')
-#             inventory_request.employee_ghana_card_number = data.get('employee_ghana_card_number', '')
-#             inventory_request.employee_position = data.get('employee_position', '')
-#             inventory_request.remarks = data.get('remarks', '')
+#             # Fetch related objects
+#             item = InventoryItem.objects.get(id=data['item'])
+#             from_department = Department.objects.get(id=data['from_department']) if data['from_department'] else None
+#             to_department = Department.objects.get(id=data['to_department']) if data['to_department'] else None
+#             employee = Employee.objects.get(id=data['employee']) if data['employee'] else None
+#             vehicle = Vehicle.objects.get(id=data['vehicle']) if 'vehicle' in data and data['vehicle'] else None
+            
+#             # Create the InventoryRequest object
+#             inventory_request = InventoryTransaction.objects.create(
+#                 item=item,
+#                 category=data['category'],
+#                 description=data.get('description', ''),
+#                 quantity=data['requested_quantity'],
+#                 transaction_type=data['transaction_type'],
+#                 from_department=from_department,
+#                 to_department=to_department,
+#                 employee=employee,
+#                 employee_name=data.get('employee_name', ''),
+#                 employee_phone=data.get('employee_phone', ''),
+#                 employee_ghana_card_number=data.get('employee_ghana_card_number', ''),
+#                 employee_position=data.get('employee_position', ''),
+#                 remarks=data.get('remarks', '')
+#             )
 
-#             inventory_request.save()
+#             # If the request is for a vehicle, also create a VehicleInventoryRequest entry
+#             if vehicle:
+#                 VehicleInventoryRequest.objects.create(
+#                     vehicle=vehicle,
+#                     inventory_item=item,
+#                     quantity_requested=data['requested_quantity'],
+#                     transaction_type=data['transaction_type'],
+#                     requested_by=employee,
+#                     request_status='pending',  # Default to pending
+#                 )
 
-#             return JsonResponse({'status': 'success', 'message': 'Inventory request updated successfully'})
+#             return JsonResponse({'status': 'success', 'message': 'Inventory request added successfully'})
 
-#         except InventoryRequest.DoesNotExist:
-#             return JsonResponse({'status': 'error', 'message': 'Inventory request not found'})
+#         except InventoryItem.DoesNotExist:
+#             return JsonResponse({'status': 'error', 'message': 'Item does not exist'})
+#         except Department.DoesNotExist:
+#             return JsonResponse({'status': 'error', 'message': 'Department does not exist'})
+#         except Vehicle.DoesNotExist:
+#             return JsonResponse({'status': 'error', 'message': 'Vehicle does not exist'})
+#         except ValidationError as e:
+#             return JsonResponse({'status': 'error', 'message': str(e)})
 #         except Exception as e:
 #             return JsonResponse({'status': 'error', 'message': f'Error: {str(e)}'})
 
 
+
 @csrf_exempt
 def update_inventory_request(request):
-    """Handle the update of an inventory request"""
+    """Handle the update of an inventory request and its related vehicle inventory request (if applicable)."""
     if request.method == 'POST':
         try:
             # Get the data sent from the frontend
@@ -1172,16 +1233,18 @@ def update_inventory_request(request):
             inventory_id = data.get('id')  # Get the ID from the request body
 
             # Fetch the inventory request by ID
-            inventory_request = InventoryRequest.objects.get(id=inventory_id)
+            inventory_request = InventoryTransaction.objects.get(id=inventory_id)
 
             # Update the fields
-            inventory_request.item = data.get('item')
+            inventory_request.item = InventoryItem.objects.get(id=data.get('item'))
             inventory_request.category = data.get('category')
             inventory_request.description = data.get('description')
             inventory_request.quantity = data.get('quantity')
             inventory_request.transaction_type = data.get('transaction_type')
-            inventory_request.from_department = data.get('from_department')
-            inventory_request.to_department = data.get('to_department')
+
+            inventory_request.from_department = Department.objects.get(id=data.get('from_department')) if data.get('from_department') else None
+            inventory_request.to_department = Department.objects.get(id=data.get('to_department')) if data.get('to_department') else None
+
             inventory_request.employee_name = data.get('employee_name')
             inventory_request.employee_phone = data.get('employee_phone')
             inventory_request.employee_ghana_card_number = data.get('employee_ghana_card_number')
@@ -1191,13 +1254,42 @@ def update_inventory_request(request):
             # Save the updated inventory request
             inventory_request.save()
 
+            # Update related vehicle inventory request if it exists
+            if 'vehicle' in data and data['vehicle']:
+                vehicle = Vehicle.objects.get(id=data['vehicle'])
+
+                # Check if a vehicle inventory request exists for this inventory transaction
+                vehicle_inventory_request, created = VehicleInventoryRequest.objects.get_or_create(
+                    vehicle=vehicle,
+                    inventory_item=inventory_request.item,
+                    defaults={
+                        'quantity_requested': inventory_request.quantity,
+                        'transaction_type': inventory_request.transaction_type,
+                        'requested_by': inventory_request.employee,
+                        'request_status': 'pending',
+                    }
+                )
+
+                # If the request already exists, update it
+                if not created:
+                    vehicle_inventory_request.quantity_requested = inventory_request.quantity
+                    vehicle_inventory_request.transaction_type = inventory_request.transaction_type
+                    vehicle_inventory_request.requested_by = inventory_request.employee
+                    vehicle_inventory_request.save()
+
             return JsonResponse({'status': 'success', 'message': 'Inventory request updated successfully'})
 
-        except InventoryRequest.DoesNotExist:
+        except InventoryTransaction.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'Inventory request not found'})
+        except Vehicle.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Vehicle not found'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': f'Error: {str(e)}'})
-        
+
+
+
+
+
 
 @csrf_exempt
 def delete_inventory_request(request):
@@ -1395,6 +1487,11 @@ def maintenance_request(request):
     departments = Department.objects.all()
     inventory_request = InventoryRequest.objects.all()
 
+    for inventory in inventories:
+        # print(inventory.category)
+        # print(inventory.description)
+        print(inventory.name)
+
     context = {
         "sidebar_items": sidebar.Sidebar.sidebar_items,
         "maintenance_requests": maintenance_requests,
@@ -1485,7 +1582,34 @@ def create_maintenance_request(request):
 
 
 
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from .models import MaintenanceRequest
 
+def get_maintenance_request_details(request, maintenance_id):
+    """Fetch maintenance request details along with vehicle information"""
+    try:
+        maintenance = MaintenanceRequest.objects.select_related("vehicle").get(id=maintenance_id)
+        
+        return JsonResponse({
+            "status": "success",
+            "maintenance_request": {
+                "id": maintenance.id,
+                "requested_by": maintenance.requested_by,
+                "category": maintenance.category,
+                "description": maintenance.description,
+                "status": maintenance.status,
+                "created_at": maintenance.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                "vehicle": {
+                    "id": maintenance.vehicle.id,
+                    "license_plate": maintenance.vehicle.license_plate,
+                    "model": maintenance.vehicle.model,
+                    "make": maintenance.vehicle.make,
+                }
+            }
+        })
+    except MaintenanceRequest.DoesNotExist:
+        return JsonResponse({"status": "error", "message": "Maintenance request not found"}, status=404)
 
 
 # Fetch all maintenance requests (for DataTable)
@@ -1537,6 +1661,78 @@ def create_new_maintenance_request(request):
     return HttpResponseNotAllowed(["POST"])
 
 
+
+
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+from django.core.exceptions import ValidationError
+# from .models import InventoryItem, Department, Employee, Vehicle, VehicleInventoryRequest, InventoryTransaction
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+
+# @csrf_exempt
+# def add_inventory_request(request):
+#     """Handle add request for inventory"""
+#     if request.method == 'POST':
+#         try:
+#             data = json.loads(request.body)
+            
+#             print("🔍 Received Data:", data)  # ✅ Debugging Log
+
+#             # Fetch related objects
+#             item = InventoryItem.objects.get(id=data['item'])
+#             from_department = Department.objects.get(id=data['from_department']) if data['from_department'] else None
+#             to_department = Department.objects.get(id=data['to_department']) if data['to_department'] else None
+#             employee = Employee.objects.get(id=data['employee']) if data['employee'] else None
+#             vehicle = Vehicle.objects.get(id=data['vehicle']) if 'vehicle' in data and data['vehicle'] else None
+            
+#             print(f"✅ Vehicle ID Retrieved: {vehicle.id if vehicle else 'None'}")  # ✅ Debugging Log
+
+#             # Create the InventoryRequest object
+#             inventory_request = InventoryTransaction.objects.create(
+#                 item=item,
+#                 category=data['category'],
+#                 description=data.get('description', ''),
+#                 quantity=data['requested_quantity'],
+#                 transaction_type=data['transaction_type'],
+#                 from_department=from_department,
+#                 to_department=to_department,
+#                 employee=employee,
+#                 employee_name=data.get('employee_name', ''),
+#                 employee_phone=data.get('employee_phone', ''),
+#                 employee_ghana_card_number=data.get('employee_ghana_card_number', ''),
+#                 employee_position=data.get('employee_position', ''),
+#                 remarks=data.get('remarks', '')
+#             )
+
+#             # If the request is for a vehicle, also create a VehicleInventoryRequest entry
+#             if vehicle:
+#                 VehicleInventoryRequest.objects.create(
+#                     vehicle=vehicle,
+#                     inventory_item=item,
+#                     quantity_requested=data['requested_quantity'],
+#                     transaction_type=data['transaction_type'],
+#                     requested_by=employee,
+#                     request_status='pending',  # Default to pending
+#                 )
+
+#             return JsonResponse({'status': 'success', 'message': 'Inventory request added successfully'})
+
+#         except InventoryItem.DoesNotExist:
+#             return JsonResponse({'status': 'error', 'message': 'Item does not exist'})
+#         except Department.DoesNotExist:
+#             return JsonResponse({'status': 'error', 'message': 'Department does not exist'})
+#         except Vehicle.DoesNotExist:
+#             print("❌ Vehicle does not exist!")  # ✅ Debugging Log
+#             return JsonResponse({'status': 'error', 'message': 'Vehicle does not exist'})
+#         except ValidationError as e:
+#             return JsonResponse({'status': 'error', 'message': str(e)})
+#         except Exception as e:
+#             print(f"❌ Error: {str(e)}")  # ✅ Debugging Log
+#             return JsonResponse({'status': 'error', 'message': f'Error: {str(e)}'})
 
 
 # Update a maintenance request
