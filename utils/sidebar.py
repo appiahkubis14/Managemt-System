@@ -16,7 +16,7 @@ class Sidebar:
             "icon": "fa fa-users",
             "sub_items": {
                 "View Employees": {"icon": "fa fa-list", "url": "/employees/employee-list/"},
-                "Requested Inventories": {"icon": "fa fa-plus", "url": "/inventory/requested-inventory/"},
+                "Requested Inventories": {"icon": "fa fa-plus", "url": "/employees/requested-inventory/"},
                 "Manage Departments": {"icon": "fa fa-building", "url": "/employees/departments/"},
                 # "Assign Roles": {"icon": "fa fa-user-shield", "url": "/employees/roles/"},
             },

@@ -136,87 +136,148 @@ import json
 # from custom_user.models import CustomUser  # Assuming the custom user model is in this app
 
 
+from django.core.files.storage import FileSystemStorage
 
 @csrf_exempt
 def add_employee(request):
     """Create a new employee."""
     if request.method == "POST":
         try:
-            data = json.loads(request.body)
-            print(data)
+            # Get the file and form data
+            employee_photo = request.FILES.get('profile_picture')  # This gets the uploaded file
+
+            # Get form data from request.POST
+            username = request.POST.get('username')
+            email = request.POST.get('email')
+            password = request.POST.get('password')
+            employee_name = request.POST.get('employee_name')
+            date_of_birth = request.POST.get('date_of_birth')
+            joining_date = request.POST.get('joining_date')
+            gender = request.POST.get('gender')
+            ghana_card = request.POST.get('ghana_card')
+            phone = request.POST.get('phone')
+            phone_2 = request.POST.get('phone_2', '')
+            role = request.POST.get('role', 'staff')
+            department = request.POST.get('department')
+            position = request.POST.get('position')
+            license_number = request.POST.get('license_number', '')
+            license_expiry_date = request.POST.get('license_expiry_date', '')
+            hire_date = request.POST.get('hire_date')
+            salary = request.POST.get('salary')
 
             # Validate required fields
-            required_fields = ["username", "email", "password", "employee_name", "department", "position"]
-            missing_fields = [field for field in required_fields if not data.get(field)]
-            if missing_fields:
-                return JsonResponse({"status": "error", "message": f"Missing fields: {', '.join(missing_fields)}"}, status=400)
-
-            # Check if salary is provided (if salary is required by your model)
-            salary = data.get("salary")
-            if salary is None:
-                return JsonResponse({"status": "error", "message": "Salary is a required field."}, status=400)
+            # required_fields = ["username", "email", "password", "employee_name", "department", "position"]
+            # missing_fields = [field for field in required_fields if not locals().get(field)]
+            # if missing_fields:
+            #     return JsonResponse({"status": "error", "message": f"Missing fields: {', '.join(missing_fields)}"}, status=400)
 
             # Create User
-            user = CustomUser.objects.create(username=data["username"], email=data["email"], role=data.get("role", "staff"))
-            user.set_password(data["password"])
+            user = CustomUser.objects.create(username=username, email=email, role=role)
+            user.set_password(password)
             user.save()
 
-            # Parse hire_date safely
-            hire_date = parse_date(data.get("hire_date")) if data.get("hire_date") else None
+            # Safely parse dates
+            hire_date = parse_date(hire_date) if hire_date else None
+            date_of_birth = parse_date(date_of_birth) if date_of_birth else None
+            joining_date = parse_date(joining_date) if joining_date else None
+            license_expiry_date = parse_date(license_expiry_date) if license_expiry_date else None
 
             # Create Employee
             employee = Employee.objects.create(
                 user=user,
-                employee_name=data.get("employee_name"),
-                date_of_birth=parse_date(data.get("date_of_birth")) if data.get("date_of_birth") else None,
-                date_of_join=parse_date(data.get("joining_date")) if data.get("joining_date") else None,
-                gender=data.get("gender"),
-                department=data["department"],
-                position=data["position"],
-                phone=data["phone"],
-                photo=data.get("photo"),
-                ghana_card=data.get("ghana_card"),
+                employee_name=employee_name,
+                date_of_birth=date_of_birth,
+                date_of_join=joining_date,
+                gender=gender,
+                department=department,
+                position=position,
+                phone=phone,
+                ghana_card=ghana_card,
                 hire_date=hire_date,
-                salary= data.get("salary"),  # Ensure salary is not null here
+                salary=salary,
+                photo=employee_photo  # Assign the uploaded file to employee's photo
             )
 
-            # Check if the employee is a driver or driver assistant
+            # Handle Driver/Driver Assistant Logic
             if user.role.lower() == "driver":
-                # Create Driver model instance
                 driver = Driver.objects.create(
-                    name=data["employee_name"],
-                    ghanacard_number=data["ghana_card"],
-                    license_number=data.get("license_number"),
-                    license_expiry_date=parse_date(data.get("license_expiry_date")) if data.get("license_expiry_date") else None,
-                    phone=data["phone"],
-                    phone_2=data.get("phone_2"),
-                    date_of_birth=parse_date(data.get("date_of_birth")) if data.get("date_of_birth") else None,
-                    gender=data.get("gender"),
-                    photo=data.get("photo")  # assuming photo file path or file
+                    name=employee_name,
+                    ghanacard_number=ghana_card,
+                    license_number=license_number,
+                    license_expiry_date=license_expiry_date,
+                    phone=phone,
+                    phone_2=phone_2,
+                    date_of_birth=date_of_birth,
+                    gender=gender,
+                    photo=employee_photo  # Assign photo to driver as well
                 )
-                # Optional: Associate the driver with the employee
                 employee.driver = driver
                 employee.save()
 
             elif user.role.lower() == "driver_assistant":
-                # Create DriverAssistant model instance
                 driver_assistant = DriverAssistant.objects.create(
-                    name=data["employee_name"],
-                    ghanacard_number=data["ghana_card"],
-                    phone=data["phone"],
-                    phone_2=data.get("phone_2"),
-                    date_of_birth=parse_date(data.get("date_of_birth")) if data.get("date_of_birth") else None,
-                    gender=data.get("gender"),
-                    photo=data.get("photo")  # assuming photo file path or file
+                    name=employee_name,
+                    ghanacard_number=ghana_card,
+                    phone=phone,
+                    phone_2=phone_2,
+                    date_of_birth=date_of_birth,
+                    gender=gender,
+                    photo=employee_photo  # Assign photo to driver assistant as well
                 )
-                # Optional: Associate the driver assistant with the employee
                 employee.driver_assistant = driver_assistant
                 employee.save()
 
-            return JsonResponse({"status": "success", "message": "Employee added successfully!"})
+            return JsonResponse({
+                "status": "success",
+                "message": "Employee added successfully!"
+            })
 
         except Exception as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
+def get_employee(request, employee_id):
+    """Retrieve details of a specific employee."""
+    try:
+        employee = get_object_or_404(Employee, id=employee_id)
+        user = employee.user  # Access associated User model
+
+        data = {
+            "id": employee.id,
+            "username": user.username,
+            "email": user.email,
+            "role": user.role,
+            "employee_name": employee.employee_name,
+            "date_of_birth": employee.date_of_birth.strftime("%Y-%m-%d") if employee.date_of_birth else "",
+            "joining_date": employee.date_of_join.strftime("%Y-%m-%d") if employee.date_of_join else "",
+            "gender": employee.gender,
+            "ghana_card": employee.ghana_card,
+            "phone": employee.phone,
+            "phone_2": employee.phone_2,
+            "department": employee.department,
+            "position": employee.position,
+            "hire_date": employee.hire_date.strftime("%Y-%m-%d") if employee.hire_date else "",
+            "salary": employee.salary,
+            "license_number": "",
+            "license_expiry_date": "",
+            "profile_picture": employee.photo.url if employee.photo else "",
+        }
+
+        # Include license details if the employee is a driver
+        if user.role.lower() == "driver" and hasattr(employee, "driver"):
+            data["license_number"] = employee.driver.license_number
+            data["license_expiry_date"] = (
+                employee.driver.license_expiry_date.strftime("%Y-%m-%d")
+                if employee.driver.license_expiry_date
+                else ""
+            )
+
+        return JsonResponse(data)
+
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
+
+
 
 
 def requested_inventory(request):
@@ -270,7 +331,7 @@ def delete_employee(request, id):
 
 def requested_inventory(request):
     
-    inventories = InventoryItem.objects.all()  # Fetch all inventory items
+    inventories = UniqueInventoryItem.objects.all()  # Fetch all inventory items
     employees = Employee.objects.all()
     departments = Department.objects.all()
     inventory_request = InventoryRequest.objects.all()
@@ -278,6 +339,46 @@ def requested_inventory(request):
     context = {
         "path": request.path if request.path else "",
         "sidebar_items": sidebar.Sidebar.sidebar_items,
-        
+        "inventories": inventories,  # Pass inventories to the template
+        "employees": employees,
+        "departments": departments,
+        "inventory_request": inventory_request,
+        "TransactionType": TransactionType
     }
     return render(request, "employees/inventory-request.html", context)
+
+
+
+
+
+
+
+###############################################################################################################
+
+
+def get_inventory_requests(request):
+    """Retrieve all inventory requests"""
+    inventory_requests = InventoryRequest.objects.all().select_related('item', 'from_department', 'to_department', 'employee')
+
+    data = [
+        {
+            "id": inv.id,
+            "item": inv.item.name,
+            "category": inv.category,
+            "description": inv.description,
+            "quantity": inv.quantity,
+            "transaction_type": inv.transaction_type,
+            "from_department": inv.from_department.name if inv.from_department else None,
+            "to_department": inv.to_department.name if inv.to_department else None,
+            "employee_name": inv.employee_name,
+            "employee_phone": inv.employee_phone,
+            "employee_ghana_card_number": inv.employee_ghana_card_number,
+            "employee_position": inv.employee_position,
+            "created_at": inv.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+            "remarks": inv.remarks,
+        }
+        for inv in inventory_requests
+    ]
+
+    print(data) 
+    return JsonResponse({'data': data})

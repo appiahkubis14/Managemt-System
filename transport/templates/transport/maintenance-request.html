@@ -205,24 +205,18 @@
                         {% csrf_token %}
                         <div class="row">
                             <!-- Inventory Item -->
-                            <div class="col-md-6 position-relative">
+                            <div class="col-md-6">
                                 <label class="form-label">Inventory Item</label>
-                                <input type="text" id="searchInput" class="form-control" placeholder="Search Inventory..." onkeyup="filterFunction()">
-                                <div id="dropdownList" class="dropdown-menu w-100">
-                                    {% for item in inventories|slice:":10" %} 
-                                    <a href="#" class="dropdown-item" 
-                                       data-id="{{ item.id }}" 
-                                       data-category="{{ item.get_category_display }}" 
-                                       data-description="{{ item.description }}" 
-                                       data-quantity="{{ item.quantity }}"
-                                       onclick="selectItem(this)">
+                                <select name="inventory_item" id="inventory_item" class="form-control" required>
+                                    <option value="">Select Item</option>
+                                    {% for item in inventories %}
+                                    <option value="{{ item.id }}" data-category="{{ item.get_category_display }}" 
+                                            data-description="{{ item.description }}" data-quantity="{{ item.quantity }}">
                                         {{ item.name }}
-                                    </a>
+                                    </option>
                                     {% endfor %}
-                                </div>
-                                <input type="hidden" name="inventory_item" id="selectedInventoryItem">
+                                </select>
                             </div>
-                            
                             <!-- Category (Auto-filled) -->
                             <div class="col-md-6">
                                 <label class="form-label">Category</label>
@@ -302,71 +296,45 @@
                             <!-- Transaction Status -->
                             <div class="col-md-6">
                                 <label class="form-label">Transaction Status</label>
-                                <select name="transaction_type" class="form-control" required>
+                                <select name="transaction_type" class="form-control" r readonly>
                                     <option value="pending">Pending</option>
                                     <option value="approved">Approved</option>
                                     <option value="rejected">Rejected</option>
                                 </select>
                             </div>
-                            <div class="mb-3 row">
-                                <div class="col-md-6">
-                                    <label for="vehicleLicense" class="form-label">Vehicle License Plate</label>
-                                    <input type="text" class="form-control" id="vehicleLicense" readonly>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="vehicleModel" class="form-label">Vehicle Model</label>
-                                    <input type="text" class="form-control" id="vehicleModel" readonly>
-                                </div>
-                            </div>
-                            <div class="mb-3 row">
-                                <div class="col-md-6">
-                                    <label for="vehicleMake" class="form-label">Vehicle Make</label>
-                                    <input type="text" class="form-control" id="vehicleMake" readonly>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="remarks" class="form-label">Remarks</label>
-                                    <textarea class="form-control" id="remarks" rows="3"></textarea>
-                                </div>
-                               
-                            </div>
-                           
-                            
                         </div>
-                        <div class="text-end mt-3" style="display: flex;justify-content: center;align-items: center;gap: 15px;">
+                        <div class="text-end mt-3">
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save"></i> Submit Request
                             </button>
-                            <!-- <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                                 <i class="fas fa-times"></i> Cancel
-                            </button> -->
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-
+    
     <script>
-        // Auto-fill inventory details
-        document.getElementById("inventory_item").addEventListener("change", function() {
-            let selected = this.options[this.selectedIndex];
-            console.log(selected);
-            document.getElementById("category").value = selected.getAttribute("data-category");
-            document.getElementById("description").value = selected.getAttribute("data-description");
-            document.getElementById("available_quantity").value = selected.getAttribute("data-quantity");
-        });
+    // Auto-fill inventory details
+    document.getElementById("inventory_item").addEventListener("change", function() {
+        let selected = this.options[this.selectedIndex];
+        document.getElementById("category").value = selected.getAttribute("data-category");
+        document.getElementById("description").value = selected.getAttribute("data-description");
+        document.getElementById("available_quantity").value = selected.getAttribute("data-quantity");
+    });
 
-        
-        
-        // Auto-fill employee details
-        document.getElementById("employee").addEventListener("change", function() {
-            let selected = this.options[this.selectedIndex];
-            document.getElementById("employee_phone").value = selected.getAttribute("data-phone");
-            document.getElementById("employee_gender").value = selected.getAttribute("data-gender");
-            document.getElementById("ghana_card").value = selected.getAttribute("data-ghcard");
-            document.getElementById("employee_position").value = selected.getAttribute("data-position");
-        });
-        </script>
+    // Auto-fill employee details
+    document.getElementById("employee").addEventListener("change", function() {
+        let selected = this.options[this.selectedIndex];
+        document.getElementById("employee_phone").value = selected.getAttribute("data-phone");
+        document.getElementById("employee_gender").value = selected.getAttribute("data-gender");
+        document.getElementById("ghana_card").value = selected.getAttribute("data-ghcard");
+        document.getElementById("employee_position").value = selected.getAttribute("data-position");
+    });
+    </script>
 
 
  <!-- Include DataTables and jQuery -->
@@ -386,8 +354,27 @@
  <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
  <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.colVis.min.js"></script>
 
+
+ <div class="modal fade" id="descriptionModal" tabindex="-1" aria-labelledby="descriptionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="descriptionModalLabel">Full Description</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="modal-description-text"></p> <!-- Full description will go here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
  <script>
     
+
+
 
 document.addEventListener("DOMContentLoaded", function () {
     let searchInput = document.getElementById("searchInput");
@@ -442,6 +429,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
+
     $(document).ready(function () {
     const table = $("#maintenanceTable").DataTable({
         paging: true,
@@ -462,7 +450,21 @@ document.addEventListener("DOMContentLoaded", function () {
             { data: "vehicle__license_plate", render: (data) => data ? data.toUpperCase() : "" },
             { data: "requested_by", render: (data) => data ? data.toUpperCase() : "" },
             { data: "category", render: (data) => data ? data.toUpperCase() : "" },
-            { data: "description", render: (data) => data ? data.toUpperCase() : "" },
+            {
+                "data": "description", 
+                "render": function(data) {
+                    // Convert the description to uppercase
+                    var uppercaseDescription = data ? data.toUpperCase() : "";
+
+                    // Check if the description exists and is longer than 20 characters
+                    if (data && data.length > 20) {
+                        return uppercaseDescription.substring(0, 20) + "... <a href='#' class='show-more' data-description='" + data + "'>more</a>";
+                    }
+
+                    // If the description is shorter than or equal to 20 characters, just show the whole uppercase description
+                    return uppercaseDescription;
+                }
+            },
             { data: "status", render: (data) => data ? data.toUpperCase() : "" },
             { data: "created_at", render: (data) => data ? data.toUpperCase() : "" },
             {
@@ -471,7 +473,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     return `
                         <div style="display: flex; justify-content: center; align-items: center; gap: 3px;">
                             
-                            <button class="btn btn-info btn-sm request-btn" data-bs-toggle="modal" data-bs-target=#addInventoryRequestModal{{data}} data-id="${data}">REQUEST INVENTORY</button>
+                            <button class="btn btn-info btn-sm request-btn" data-bs-toggle="modal" data-bs-target=#addInventoryRequestModal data-id="${data}">REQUEST INVENTORY</button>
                             <button class="btn btn-danger btn-sm delete-btn" data-id="${data}">DELETE</button>
                         </div>
                     `;
@@ -491,7 +493,12 @@ document.addEventListener("DOMContentLoaded", function () {
         order: [[0, "desc"]]
     });
 
-    
+    $(document).on('click', '.show-more', function(e) {
+        e.preventDefault();
+        var fullDescription = $(this).data('description');  // Get the full description
+        $('#modal-description-text').text(fullDescription);  // Set the description in the modal
+        $('#descriptionModal').modal('show');  // Show the modal
+    });
 
 
     $(".request-btn").on("click", function() {

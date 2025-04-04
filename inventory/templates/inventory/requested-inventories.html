@@ -186,7 +186,7 @@
                                         <!-- Transaction Status -->
                                         <div class="col-md-6">
                                             <label class="form-label">Transaction Status</label>
-                                            <select name="transaction_type" class="form-control" required>
+                                            <select name="transaction_type" class="form-control" r readonly>
                                                 <option value="pending">Pending</option>
                                                 <option value="approved">Approved</option>
                                                 <option value="rejected">Rejected</option>
@@ -251,7 +251,7 @@
                     
                        
                             <!-- Edit Inventory Modal -->
-                            <div class="modal fade" id="editModal{{ item.id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
                                         <div class="modal-header">
@@ -259,68 +259,73 @@
                                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                         </div>
                                         <div class="modal-body">
-                                            <form id="editInventoryForm{{ item.id }}"  method="POST">
-
+                                            <form id="editInventoryForm" method="POST">
                                                 {% csrf_token %}
                                                 <input type="hidden" name="_method" value="PATCH">
-            
-                                                <div class="mb-3">
-                                                    <label class="form-label">Name</label>
-                                                    <input type="text" class="form-control" name="name" value="{{ item.item.name }}">
+                            
+                                                <div class="row">
+                                                    <!-- Left Column -->
+                                                    <div class="col-md-6">
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Name</label>
+                                                            <input type="text" class="form-control" name="name">
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Category</label>
+                                                            <input type="text" class="form-control" name="category">
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Quantity</label>
+                                                            <input type="number" class="form-control" name="quantity">
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Transaction Status</label>
+                                                            <input type="text" class="form-control" name="transaction_type">
+                                                        </div>
+                                                        
+                                                        <div class="mb-3">
+                                                            <label class="form-label">From Department</label>
+                                                            <input type="text" class="form-control" name="from_department">
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">To Department</label>
+                                                            <input type="text" class="form-control" name="to_department">
+                                                        </div>
+                                                    </div>
+                            
+                                                    <!-- Right Column -->
+                                                    <div class="col-md-6">
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Employee Name</label>
+                                                            <input type="text" class="form-control" name="employee_name" style="display: flex;align-items: flex-start;">
+                                                        </div>
+                                                        <!-- <div class="mb-3">
+                                                            <label class="form-label">Gender</label>
+                                                            <input type="text" class="form-control" name="gender">
+                                                        </div> -->
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Employee Phone</label>
+                                                            <input type="text" class="form-control" name="employee_phone">
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Ghana Card Number</label>
+                                                            <input type="text" class="form-control" name="ghana_card_number">
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Position</label>
+                                                            <input type="text" class="form-control" name="position">
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Description</label>
+                                                            <textarea class="form-control" name="description"></textarea>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Category</label>
-                                                    <input type="text" class="form-control" name="category" value="{{ item.item.category }}">
+                            
+                                                <!-- Submit Button -->
+                                                <div class="text-end" style="display: flex;align-items: center;justify-content: center;">
+                                                    <button type="submit" class="btn btn-primary">Save Changes</button>
                                                 </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Description</label>
-                                                    <textarea class="form-control" name="description">{{ item.description }}</textarea>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Quantity</label>
-                                                    <input type="number" class="form-control" name="quantity" value="{{ item.quantity }}">
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Transaction Status</label>
-                                                    <select class="form-control" name="transaction_type">
-                                                        {% for choice in TransactionType %}
-                                                            <option value="{{ choice.value }}" {% if choice.value == item.transaction_type %}selected{% endif %}>
-                                                                {{ choice.label }}
-                                                            </option>
-                                                        {% endfor %}
-                                                    </select>
-                                                </div>
-                                                
-                                                <div class="mb-3">
-                                                    <label class="form-label">From Department</label>
-                                                    <input type="text" class="form-control" name="from_department" value="{{ item.from_department }}">
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">To Department</label>
-                                                    <input type="text" class="form-control" name="to_department" value="{{ item.to_department }}">
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Employee Name</label>
-                                                    <input type="text" class="form-control" name="employee_name" value="{{ item.employee_name }}">
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Gender</label>
-                                                    <input type="text" class="form-control" name="gender" value="{{ item.employee_gender }}">
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Employee Phone</label>
-                                                    <input type="text" class="form-control" name="employee_phone" value="{{ item.employee_phone }}">
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Ghana Card Number</label>
-                                                    <input type="text" class="form-control" name="ghana_card_number" value="{{ item.employee_ghana_card_number }}">
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Position</label>
-                                                    <input type="text" class="form-control" name="position" value="{{ item.employee_position }}">
-                                                </div>
-            
-                                                <button type="submit" class="btn btn-primary">Save Changes</button>
                                             </form>
                                         </div>
                                     </div>
@@ -436,7 +441,7 @@ $(document).ready(function () {
                     return `
                         <div class="d-flex justify-content-center gap-2">
                             <button class="btn btn-sm btn-primary edit-inventory" data-id="${data}">View</button>
-                            <button class="btn btn-sm btn-danger delete-inventory" id=delete-btn data-id="${data}">Delete</button>
+                            <button class="btn btn-sm btn-danger delete-inventory"  data-id="${data}">Delete</button>
                         </div>`;
                 },
               
@@ -501,33 +506,39 @@ $(document).ready(function () {
 
     // Open Edit Modal
     $(document).on("click", ".edit-inventory", function () {
-        let inventoryId = $(this).data("id");
+    let inventoryId = $(this).data("id");
 
-        $.ajax({
-            url: `/inventory/api/items/${inventoryId}/`,
-            type: "GET",
-            success: function (data) {
-                $("#inventoryModalTitle").text("Edit Inventory");
-                $("#inventoryId").val(data.id);
-                $("#itemName").val(data.item.name);
-                $("#category").val(data.category);
-                $("#description").val(data.description);
-                $("#quantity").val(data.quantity);
-                $("#transactionType").val(data.transaction_type);
-                $("#fromDepartment").val(data.from_department.name);
-                $("#toDepartment").val(data.to_department.name);
-                $("#employeeName").val(data.employee_name);
-                $("#employeePhone").val(data.employee_phone);
-                $("#ghanaCard").val(data.employee_ghana_card_number);
-                $("#position").val(data.employee_position);
+    $.ajax({
+        url: `/inventory/inventory-request-item/${inventoryId}/`,
+        type: "GET",
+        success: function (data) {
+            console.log(data)
+            // Trim unnecessary spaces from employee_name
+            let cleanEmployeeName = $.trim(data.employee_name);
 
-                $("#inventoryModal").modal("show");
-            },
-            error: function (xhr) {
-                alert("Error: " + xhr.responseText);
-            }
-        });
+            // Autofill modal form fields
+            $("#editModal").find("input[name='name']").val(data.item || "");
+            $("#editModal").find("input[name='category']").val(data.category || "");
+            $("#editModal").find("input[name='quantity']").val(data.quantity || "");
+            $("#editModal").find("textarea[name='description']").val(data.description || "");
+            $("#editModal").find("select[name='transaction_type']").val(data.transaction_type || "");
+            $("#editModal").find("input[name='from_department']").val(data.from_department || "");
+            $("#editModal").find("input[name='to_department']").val(data.to_department || "");
+            $("#editModal").find("input[name='employee_name']").val(cleanEmployeeName);
+            // $("#editModal").find("input[name='gender']").val(data.gender || "");
+            $("#editModal").find("input[name='employee_phone']").val(data.employee_phone || "");
+            $("#editModal").find("input[name='ghana_card_number']").val(data.employee_ghana_card_number || "");
+            $("#editModal").find("input[name='position']").val(data.employee_position || "");
+
+            // Show the modal
+            $("#editModal").modal("show");
+        },
+        error: function (xhr) {
+            alert("Error fetching inventory details.");
+        }
     });
+});
+
 
     $(document).ready(function() {
     $("#addInventoryRequestForm").submit(function(event) {

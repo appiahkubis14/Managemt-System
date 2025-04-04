@@ -176,11 +176,19 @@ custom_filters %} {% block add_new %}
                     <div class="col-md-6">
                       <label class="form-label">Status</label>
                       <select name="status" class="form-control">
-                        <option value="available">Available</option>
-                        <option value="maintenance">In Maintenance</option>
-                        <option value="in_use">Active</option>
+                          <option value="active">Active</option>
+                          <option value="inactive">Inactive</option>
+                          <option value="maintenance">In Maintenance</option>
+                          <option value="out_of_service">Out of Service</option>
+                          <option value="retired">Retired</option>
+                          <option value="scrapped">Scrapped</option>
+                          <option value="damaged">Damaged</option>
+                          <option value="stolen">Stolen</option>
+                          <option value="lost">Lost</option>
+                          <option value="unknown">Unknown</option>
                       </select>
-                    </div>
+                  </div>
+                  
                     <div class="col-md-12">
                       <label class="form-label">Vehicle Image</label>
                       <input
@@ -570,29 +578,54 @@ custom_filters %} {% block add_new %}
 
         // ✅ Add Vehicle (POST)
         $("#addVehicleForm").submit(function (e) {
-          e.preventDefault();
-          var formData = new FormData(this);
+    e.preventDefault();  // Prevent the default form submission
 
-          $.ajax({
-            url: "/transport/vehicles/add/",
-            type: "POST",
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function (response) {
-              if (response.success) {
-                showMessage("success", "Vehicle added successfully!");
-                $("#addVehicleModal").modal("hide");
-                table.ajax.reload();
-              } else {
-                alert("warning", response.message || "Failed to add vehicle!");
-              }
-            },
-            error: function (xhr) {
-              showMessage("danger", `Error: ${xhr.responseText}`);
-            },
-          });
-        });
+    var formData = new FormData(this);  // Get form data using FormData
+
+    $.ajax({
+        url: "/transport/vehicles/add/",  // API endpoint to add vehicle
+        type: "POST",
+        data: formData,
+        processData: false,  // Don't process the data (important for FormData)
+        contentType: false,  // Set contentType to false to let jQuery handle it
+        success: function (response) {
+            if (response.success) {
+                // Success: Show success message using SweetAlert
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Vehicle Added',
+                    text: 'Vehicle added successfully!',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    // After closing the success message:
+                    // Close the modal
+                    $("#addVehicleModal").modal("hide");
+                    // Refresh the DataTable
+                    table.ajax.reload();  // This reloads the table data
+                });
+            } else {
+                // Warning: Show warning message using SweetAlert
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Failed to Add Vehicle',
+                    text: response.message || 'Please try again!',
+                    confirmButtonText: 'OK'
+                });
+            }
+        },
+        error: function (xhr) {
+            // Error: Show error message using SweetAlert
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: `Error: ${xhr.responseText}`,
+                confirmButtonText: 'OK'
+            });
+        }
+    });
+});
+
+
 
         // ✅ Edit Vehicle (Load Data into Modal)
         $(document).on("click", ".edit-vehicle", function () {

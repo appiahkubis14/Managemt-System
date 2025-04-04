@@ -70,7 +70,7 @@ class Vehicle(models.Model):
     make = models.CharField(max_length=128,blank=True, null=True)
     model = models.CharField(max_length=128,blank=True, null=True)
     year = models.IntegerField()
-    status = models.CharField(max_length=20, choices=[('active', 'Active'), ('inactive', 'Inactive'), ('maintenance', 'Maintenance')], default='active')
+    status = models.CharField(max_length=20, choices=[('active', 'Active'), ('inactive', 'Inactive'), ('maintenance', 'Maintenance'), ('out_of_service', 'Out of Service'), ('retired', 'Retired'), ('scrapped', 'Scrapped'), ('damaged', 'Damaged'), ('stolen', 'Stolen'), ('lost', 'Lost'), ('unknown', 'Unknown')], default='active')
     # fuel_type = models.CharField(max_length=50, choices=[('petrol', 'Petrol'), ('diesel', 'Diesel'), ('electric', 'Electric')], null=True, blank=True)
     mfg_year_month = models.DateField(blank=True, null=True)
     date_of_registration = models.DateField(blank=True, null=True)

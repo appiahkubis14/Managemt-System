@@ -119,7 +119,7 @@ def inventory_dashboard_view(request):
     }
     return render(request, "inventory/dashboard.html", context)
 
-
+####################################################################################################################
 from django.utils.text import Truncator
 
 def inventory_view(request):
@@ -191,13 +191,13 @@ def get_inventory_requests(request):
 
     print(data) 
     return JsonResponse({'data': data})
-def get_inventory_request_detail(request, id):
+def get_inventory_request_detail(request, item_id):
     """Retrieve a specific inventory request by ID"""
-    inventory_request = get_object_or_404(InventoryRequest, id=id)
+    inventory_request = get_object_or_404(InventoryRequest, id=item_id)
     
     data = {
         "id": inventory_request.id,
-        "item": inventory_request.item.name,
+        "item": inventory_request.item.name if inventory_request.item else None,  # Convert to string
         "category": inventory_request.category,
         "description": inventory_request.description,
         "quantity": inventory_request.quantity,
@@ -213,6 +213,7 @@ def get_inventory_request_detail(request, id):
     }
 
     return JsonResponse(data)
+
 
 import json
 from django.http import JsonResponse
@@ -266,33 +267,40 @@ def add_inventory_request(request):
 
 
 
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+
 @csrf_exempt
 def update_inventory_request(request):
     """Handle the update of an inventory request"""
     if request.method == 'POST':
         try:
-            # Get the data sent from the frontend
             data = json.loads(request.body)
-            inventory_id = data.get('id')  # Get the ID from the request body
+            inventory_id = data.get('id')
 
-            # Fetch the inventory request by ID
+            # Fetch inventory request or return error
             inventory_request = InventoryRequest.objects.get(id=inventory_id)
 
-            # Update the fields
+            # Ensure ForeignKey fields are assigned correctly
+            from_department_id = data.get('from_department')
+            to_department_id = data.get('to_department')
+
             inventory_request.item = data.get('item')
             inventory_request.category = data.get('category')
             inventory_request.description = data.get('description')
             inventory_request.quantity = data.get('quantity')
             inventory_request.transaction_type = data.get('transaction_type')
-            inventory_request.from_department = data.get('from_department')
-            inventory_request.to_department = data.get('to_department')
-            inventory_request.employee_name = data.get('employee_name')
+
+            inventory_request.from_department_id = from_department_id if from_department_id else None
+            inventory_request.to_department_id = to_department_id if to_department_id else None
+
+            inventory_request.employee_name = data.get('employee_name').strip() if data.get('employee_name') else ""
             inventory_request.employee_phone = data.get('employee_phone')
             inventory_request.employee_ghana_card_number = data.get('employee_ghana_card_number')
             inventory_request.employee_position = data.get('employee_position')
             inventory_request.remarks = data.get('remarks')
 
-            # Save the updated inventory request
             inventory_request.save()
 
             return JsonResponse({'status': 'success', 'message': 'Inventory request updated successfully'})
@@ -301,7 +309,7 @@ def update_inventory_request(request):
             return JsonResponse({'status': 'error', 'message': 'Inventory request not found'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': f'Error: {str(e)}'})
-        
+
 
 @csrf_exempt
 def delete_inventory_request(request):

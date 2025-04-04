@@ -6,6 +6,7 @@ urlpatterns = [
     path("view-inventories/", inventory_view, name="view_inventories"),
     path("requested-inventory/", requested_inventory , name="inventory-request") ,
     path("inventory-item/<int:item_id>/",get_inventory_by_id,name='requested_inventory'),
+     path("inventory-request-item/<int:item_id>/",get_inventory_request_detail,name='requested_inventory'),
     path("all-request-inventory/", get_inventory_requests , name="request-inventory") ,
     path('create/', create_inventory, name='create_inventory'),
     path('update/<int:item_id>/', update_inventory, name='update_inventory'),  # Use <int:item_id> if the ID is an integer

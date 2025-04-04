@@ -8,13 +8,13 @@ urlpatterns = [
     path('add/', add_employee, name='add_employee'),  # Admin can add employees
     path("update/<str:id>/", update_employee, name="update_employee"), 
     path("employee-delete/<str:id>/", delete_employee, name="delete_employee"),
-    # path("all-request-inventory/", requested_inventory , name="request-inventory") ,
-    path('inventory-request/',requested_inventory,name='requested_inventory'),
+    path("all-request-inventory/", get_inventory_requests , name="request-inventory") ,
+    # path('inventory-request/',requested_inventory,name='requested_inventory'),
+    path("requested-inventory/", requested_inventory , name="inventory-request") ,
     # path('export/', export_employees_csv, name='export_employees_csv'),
     # path('import/', import_employees, name='import_employees'),
 
-    # path('requests/create/', create_inventory_request, name='create_inventory_request'),
-#     path('requests/update/<int:request_id>/', update_inventory_request, name='update_inventory_request'),
-#     path('requests/delete/<int:request_id>/', delete_inventory_request, name='delete_inventory_request'),
-
+    path("employee/<int:employee_id>/", get_employee, name="get_employee"),
+    path("employee/<int:employee_id>/update/", update_employee, name="update_employee"),
+    path("employee/<int:employee_id>/delete/", delete_employee, name="delete_employee"),
 ]
